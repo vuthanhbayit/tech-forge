@@ -10,7 +10,15 @@ useSeoMeta({
   title: 'Quản lý người dùng - TechForge Admin',
 })
 
-const toast = useToast()
+const { handleError, showSuccess } = useApiError()
+const { formatDateTime } = useFormatters()
+const {
+  isOpen: deleteModal,
+  itemToDelete: userToDelete,
+  isDeleting,
+  openModal,
+  confirmDelete,
+} = useDeleteConfirm<User>()
 
 // Filters
 const search = ref('')
@@ -74,68 +82,27 @@ const columns = [
   { accessorKey: 'actions', header: '' },
 ]
 
-// Format helpers
-function getFullName(user: User): string {
-  const parts = [user.firstName, user.lastName].filter(Boolean)
-  return parts.length > 0 ? parts.join(' ') : user.email
-}
-
-function formatDate(date: string | null): string {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString('vi-VN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
+// Delete user
+async function deleteUser() {
+  await confirmDelete(async () => {
+    await $fetch(`/api/admin/users/${userToDelete.value!.id}`, { method: 'DELETE' })
+    showSuccess('Đã xóa người dùng')
+    refresh()
   })
 }
 
-// Delete user
-const deleteModal = ref(false)
-const userToDelete = ref<User | null>(null)
-const deleting = ref(false)
-
-function confirmDelete(user: User) {
-  userToDelete.value = user
-  deleteModal.value = true
-}
-
-async function deleteUser() {
-  if (!userToDelete.value) return
-
-  deleting.value = true
+async function handleDelete() {
   try {
-    await $fetch(`/api/admin/users/${userToDelete.value.id}`, {
-      method: 'DELETE',
-    })
-    toast.add({ title: 'Thành công', description: 'Đã xóa người dùng', color: 'success' })
-    deleteModal.value = false
-    userToDelete.value = null
-    refresh()
-  } catch (error: unknown) {
-    const err = error as { data?: { message?: string } }
-    toast.add({
-      title: 'Lỗi',
-      description: err.data?.message || 'Không thể xóa người dùng',
-      color: 'error',
-    })
-  } finally {
-    deleting.value = false
+    await deleteUser()
+  } catch (error) {
+    handleError(error, 'Không thể xóa người dùng')
   }
 }
 </script>
 
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <UDashboardNavbar title="Quản lý người dùng">
-      <template #leading>
-        <UDashboardSidebarCollapse />
-      </template>
-      <template #right>
-        <UButton icon="i-heroicons-plus" label="Thêm người dùng" to="/admin/users/new" />
-      </template>
-    </UDashboardNavbar>
+    <AdminPageHeader title="Quản lý người dùng" add-label="Thêm người dùng" add-link="/admin/users/new" />
 
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <!-- Filters -->
@@ -171,14 +138,13 @@ async function deleteUser() {
       <UCard>
         <UTable :columns="columns" :data="users" :loading="fetchStatus === 'pending'">
           <template #user-cell="{ row }">
-            <div class="flex items-center gap-3">
-              <UAvatar :alt="getFullName(row.original)" :src="row.original.avatar ?? undefined" size="sm" />
-              <div>
-                <div class="font-medium">{{ getFullName(row.original) }}</div>
-                <div class="text-muted text-sm">{{ row.original.email }}</div>
-                <div v-if="row.original.phone" class="text-muted text-xs">{{ row.original.phone }}</div>
-              </div>
-            </div>
+            <UserCell
+              :first-name="row.original.firstName"
+              :last-name="row.original.lastName"
+              :email="row.original.email"
+              :phone="row.original.phone"
+              :avatar="row.original.avatar"
+            />
           </template>
 
           <template #role-cell="{ row }">
@@ -189,9 +155,7 @@ async function deleteUser() {
           </template>
 
           <template #status-cell="{ row }">
-            <UBadge :color="row.original.isActive ? 'success' : 'neutral'" variant="subtle">
-              {{ row.original.isActive ? 'Hoạt động' : 'Vô hiệu hóa' }}
-            </UBadge>
+            <StatusBadge :active="row.original.isActive" />
           </template>
 
           <template #orders-cell="{ row }">
@@ -199,27 +163,15 @@ async function deleteUser() {
           </template>
 
           <template #lastLogin-cell="{ row }">
-            <span class="text-muted text-sm">{{ formatDate(row.original.lastLoginAt) }}</span>
+            <span class="text-muted text-sm">{{ formatDateTime(row.original.lastLoginAt) }}</span>
           </template>
 
           <template #actions-cell="{ row }">
-            <div class="flex justify-end gap-2">
-              <UButton
-                :to="`/admin/users/${row.original.id}`"
-                color="neutral"
-                icon="i-heroicons-pencil-square"
-                size="xs"
-                variant="ghost"
-              />
-              <UButton
-                :disabled="row.original.role?.name === 'super_admin'"
-                color="error"
-                icon="i-heroicons-trash"
-                size="xs"
-                variant="ghost"
-                @click="confirmDelete(row.original)"
-              />
-            </div>
+            <TableActions
+              :edit-link="`/admin/users/${row.original.id}`"
+              :delete-disabled="row.original.role?.name === 'super_admin'"
+              @delete="openModal(row.original)"
+            />
           </template>
         </UTable>
       </UCard>
@@ -231,28 +183,12 @@ async function deleteUser() {
     </div>
 
     <!-- Delete Modal -->
-    <UModal v-model:open="deleteModal">
-      <template #content>
-        <UCard>
-          <template #header>
-            <h3 class="text-lg font-semibold">Xác nhận xóa</h3>
-          </template>
-
-          <p>
-            Bạn có chắc muốn xóa người dùng
-            <strong>{{ userToDelete?.email }}</strong>
-            ?
-          </p>
-          <p class="text-muted mt-2 text-sm">Người dùng sẽ bị vô hiệu hóa và không thể đăng nhập.</p>
-
-          <template #footer>
-            <div class="flex justify-end gap-3">
-              <UButton color="neutral" label="Hủy" variant="outline" @click="deleteModal = false" />
-              <UButton :loading="deleting" color="error" label="Xóa" @click="deleteUser" />
-            </div>
-          </template>
-        </UCard>
-      </template>
-    </UModal>
+    <DeleteConfirmModal
+      v-model:open="deleteModal"
+      :item-name="userToDelete?.email"
+      :loading="isDeleting"
+      description="Người dùng sẽ bị vô hiệu hóa và không thể đăng nhập."
+      @confirm="handleDelete"
+    />
   </div>
 </template>

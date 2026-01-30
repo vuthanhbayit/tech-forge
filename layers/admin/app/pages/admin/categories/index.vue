@@ -11,6 +11,8 @@ useSeoMeta({
   title: 'Quản lý Danh mục - TechForge Admin',
 })
 
+const { handleError, showSuccess } = useApiError()
+
 const { data: categories, refresh, status } = await useFetch<Category[]>('/api/admin/categories')
 
 const columns: TableColumn<Category>[] = [
@@ -25,25 +27,16 @@ const columns: TableColumn<Category>[] = [
 ]
 
 // Delete category
-const toast = useToast()
 const deleteLoading = ref<string | null>(null)
 
 async function deleteCategory(category: Category) {
   if (category._count.children > 0) {
-    toast.add({
-      title: 'Lỗi',
-      description: `Không thể xóa danh mục có ${category._count.children} danh mục con`,
-      color: 'error',
-    })
+    handleError({ data: { message: `Không thể xóa danh mục có ${category._count.children} danh mục con` } }, '')
     return
   }
 
   if (category._count.products > 0) {
-    toast.add({
-      title: 'Lỗi',
-      description: `Không thể xóa danh mục có ${category._count.products} sản phẩm`,
-      color: 'error',
-    })
+    handleError({ data: { message: `Không thể xóa danh mục có ${category._count.products} sản phẩm` } }, '')
     return
   }
 
@@ -52,15 +45,10 @@ async function deleteCategory(category: Category) {
   deleteLoading.value = category.id
   try {
     await $fetch(`/api/admin/categories/${category.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Thành công', description: 'Đã xóa danh mục', color: 'success' })
+    showSuccess('Đã xóa danh mục')
     refresh()
-  } catch (error: unknown) {
-    const err = error as { data?: { message?: string } }
-    toast.add({
-      title: 'Lỗi',
-      description: err.data?.message || 'Không thể xóa danh mục',
-      color: 'error',
-    })
+  } catch (error) {
+    handleError(error, 'Không thể xóa danh mục')
   } finally {
     deleteLoading.value = null
   }
@@ -69,14 +57,7 @@ async function deleteCategory(category: Category) {
 
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <UDashboardNavbar title="Quản lý Danh mục">
-      <template #leading>
-        <UDashboardSidebarCollapse />
-      </template>
-      <template #right>
-        <UButton label="Thêm danh mục" icon="i-heroicons-plus" to="/admin/categories/new" />
-      </template>
-    </UDashboardNavbar>
+    <AdminPageHeader title="Quản lý Danh mục" add-label="Thêm danh mục" add-link="/admin/categories/new" />
 
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <UCard>
@@ -116,32 +97,16 @@ async function deleteCategory(category: Category) {
           </template>
 
           <template #cell-isActive="{ row }">
-            <UBadge
-              :label="row.original.isActive ? 'Hoạt động' : 'Tắt'"
-              :color="row.original.isActive ? 'success' : 'neutral'"
-              variant="subtle"
-            />
+            <StatusBadge :active="row.original.isActive" active-label="Hoạt động" inactive-label="Tắt" />
           </template>
 
           <template #cell-actions="{ row }">
-            <div class="flex justify-end gap-2">
-              <UButton
-                icon="i-heroicons-pencil-square"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                :to="`/admin/categories/${row.original.id}`"
-              />
-              <UButton
-                icon="i-heroicons-trash"
-                color="error"
-                variant="ghost"
-                size="sm"
-                :disabled="row.original._count.children > 0 || row.original._count.products > 0"
-                :loading="deleteLoading === row.original.id"
-                @click="deleteCategory(row.original)"
-              />
-            </div>
+            <TableActions
+              :edit-link="`/admin/categories/${row.original.id}`"
+              :delete-disabled="row.original._count.children > 0 || row.original._count.products > 0"
+              :delete-loading="deleteLoading === row.original.id"
+              @delete="deleteCategory(row.original)"
+            />
           </template>
         </UTable>
       </UCard>

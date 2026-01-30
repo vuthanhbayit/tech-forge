@@ -11,6 +11,8 @@ useSeoMeta({
   title: 'Quản lý Roles - TechForge Admin',
 })
 
+const { handleError, showSuccess } = useApiError()
+
 const { data: roles, refresh, status } = await useFetch<Role[]>('/api/admin/roles')
 
 const columns: TableColumn<Role>[] = [
@@ -23,21 +25,16 @@ const columns: TableColumn<Role>[] = [
 ]
 
 // Delete role
-const toast = useToast()
 const deleteLoading = ref<string | null>(null)
 
 async function deleteRole(role: Role) {
   if (role.isSystem) {
-    toast.add({ title: 'Lỗi', description: 'Không thể xóa role hệ thống', color: 'error' })
+    handleError({ data: { message: 'Không thể xóa role hệ thống' } }, '')
     return
   }
 
   if (role._count.users > 0) {
-    toast.add({
-      title: 'Lỗi',
-      description: `Không thể xóa role có ${role._count.users} người dùng`,
-      color: 'error',
-    })
+    handleError({ data: { message: `Không thể xóa role có ${role._count.users} người dùng` } }, '')
     return
   }
 
@@ -46,15 +43,10 @@ async function deleteRole(role: Role) {
   deleteLoading.value = role.id
   try {
     await $fetch(`/api/admin/roles/${role.id}`, { method: 'DELETE' })
-    toast.add({ title: 'Thành công', description: 'Đã xóa role', color: 'success' })
+    showSuccess('Đã xóa role')
     refresh()
-  } catch (error: unknown) {
-    const err = error as { data?: { message?: string } }
-    toast.add({
-      title: 'Lỗi',
-      description: err.data?.message || 'Không thể xóa role',
-      color: 'error',
-    })
+  } catch (error) {
+    handleError(error, 'Không thể xóa role')
   } finally {
     deleteLoading.value = null
   }
@@ -63,14 +55,7 @@ async function deleteRole(role: Role) {
 
 <template>
   <div class="flex h-full min-h-0 flex-col">
-    <UDashboardNavbar title="Quản lý Roles">
-      <template #leading>
-        <UDashboardSidebarCollapse />
-      </template>
-      <template #right>
-        <UButton label="Thêm Role" icon="i-heroicons-plus" to="/admin/roles/new" />
-      </template>
-    </UDashboardNavbar>
+    <AdminPageHeader title="Quản lý Roles" add-label="Thêm Role" add-link="/admin/roles/new" />
 
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <UCard>
@@ -81,24 +66,12 @@ async function deleteRole(role: Role) {
           </template>
 
           <template #cell-actions="{ row }">
-            <div class="flex justify-end gap-2">
-              <UButton
-                icon="i-heroicons-pencil-square"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                :to="`/admin/roles/${row.original.id}`"
-              />
-              <UButton
-                icon="i-heroicons-trash"
-                color="error"
-                variant="ghost"
-                size="sm"
-                :disabled="row.original.isSystem || row.original._count.users > 0"
-                :loading="deleteLoading === row.original.id"
-                @click="deleteRole(row.original)"
-              />
-            </div>
+            <TableActions
+              :edit-link="`/admin/roles/${row.original.id}`"
+              :delete-disabled="row.original.isSystem || row.original._count.users > 0"
+              :delete-loading="deleteLoading === row.original.id"
+              @delete="deleteRole(row.original)"
+            />
           </template>
         </UTable>
       </UCard>
