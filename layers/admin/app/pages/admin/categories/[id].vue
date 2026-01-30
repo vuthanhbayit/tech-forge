@@ -32,17 +32,8 @@ const { data: allCategories } = await useFetch<CategoryOption[]>('/api/admin/cat
   },
 })
 
-// Build parent options
-const parentOptions = computed(() => {
-  if (!allCategories.value) return []
-
-  const options = [{ id: '', name: '— Danh mục gốc —' }]
-  allCategories.value.forEach(cat => {
-    options.push(cat)
-  })
-
-  return options
-})
+// Build parent options (placeholder handles "no parent" case)
+const parentOptions = computed(() => allCategories.value || [])
 
 // Form state
 const state = reactive({
@@ -205,13 +196,15 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
               </template>
             </UFormField>
 
-            <UFormField class="md:col-span-2" label="Danh mục cha" name="parentId">
-              <USelect
+            <UFormField v-if="parentOptions.length" class="md:col-span-2" label="Danh mục cha" name="parentId">
+              <USelectMenu
                 v-model="state.parentId"
-                :options="parentOptions"
+                :items="parentOptions"
                 class="w-full"
-                option-label="name"
-                option-value="id"
+                clear
+                label-key="name"
+                placeholder="— Danh mục gốc —"
+                value-key="id"
               />
             </UFormField>
 
@@ -260,9 +253,9 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
           <UFormField label="Spec Template (JSON)" name="specTemplate">
             <UTextarea
               v-model="state.specTemplate"
+              :rows="8"
               class="w-full font-mono text-sm"
               placeholder='{"cpu": "string", "ram": "string", "storage": "string"}'
-              :rows="8"
             />
             <template #hint>
               <span class="text-xs text-neutral-500">Template cho thông số kỹ thuật sản phẩm (JSON format)</span>
