@@ -7,21 +7,14 @@ export default defineEventHandler(async event => {
 
   const query = getQuery(event)
   const page = Number(query.page) || 1
-  const limit = Math.min(Number(query.limit) || 20, 100)
+  const limit = Number(query.limit) || 20
   const search = (query.search as string) || ''
   const roleId = (query.roleId as string) || ''
   const isActive = query.isActive === 'true' ? true : query.isActive === 'false' ? false : undefined
 
   const where = {
-    deletedAt: null,
-    ...(search && {
-      OR: [
-        { email: { contains: search, mode: 'insensitive' as const } },
-        { firstName: { contains: search, mode: 'insensitive' as const } },
-        { lastName: { contains: search, mode: 'insensitive' as const } },
-        { phone: { contains: search, mode: 'insensitive' as const } },
-      ],
-    }),
+    ...withoutDeleted(),
+    ...searchFilter(search, ['email', 'firstName', 'lastName', 'phone']),
     ...(roleId && { roleId }),
     ...(isActive !== undefined && { isActive }),
   }
@@ -54,19 +47,13 @@ export default defineEventHandler(async event => {
         },
       },
       orderBy: { createdAt: 'desc' },
-      skip: (page - 1) * limit,
-      take: limit,
+      ...paginate(page, limit),
     }),
     prisma.user.count({ where }),
   ])
 
   return {
     users,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
+    pagination: buildPaginationInfo(page, limit, total),
   }
 })

@@ -38,10 +38,7 @@ const roleOptions = computed(() => {
   return roles.value.map(r => ({ value: r.id, label: r.displayName }))
 })
 
-const statusOptions = [
-  { value: 'true', label: 'Đang hoạt động' },
-  { value: 'false', label: 'Đã vô hiệu hóa' },
-]
+const statusOptions = ACTIVE_STATUS_OPTIONS
 
 // Query params - only include if has value
 const queryRoleId = computed(() => selectedRoleId.value || undefined)
