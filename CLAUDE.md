@@ -1,7 +1,5 @@
 # TechForge - Ecommerce Website
 
-## Project Overview
-
 Website ecommerce bán máy tính, phụ kiện và tư vấn công nghệ cho thị trường Việt Nam.
 
 ## Tech Stack
@@ -11,415 +9,186 @@ Website ecommerce bán máy tính, phụ kiện và tư vấn công nghệ cho t
 | Framework  | Nuxt 4.3 với Nitro Server              |
 | UI         | @nuxt/ui 4.4 (bao gồm Tailwind CSS v4) |
 | Database   | PostgreSQL 16 + Prisma ORM 7.3         |
-| Payment    | VietQR (chuyển khoản QR), COD          |
-| AI Chatbot | OpenAI GPT (để sau)                    |
-| Hosting    | Vercel                                 |
 | Language   | TypeScript 5.9                         |
 | Linting    | ESLint 9 + @nuxt/eslint + vue-tsc      |
-| Formatting | Prettier 3.8                           |
 
 ## Scripts
 
 ```bash
 pnpm dev          # Chạy dev server
 pnpm build        # Build production
-pnpm typecheck    # Kiểm tra TypeScript (vue-tsc + tsc)
+pnpm typecheck    # Kiểm tra TypeScript
 pnpm lint         # Kiểm tra ESLint
 pnpm lint:fix     # Sửa lỗi ESLint
 pnpm format       # Format code với Prettier
-pnpm format:check # Kiểm tra format
-pnpm db:generate  # Generate Prisma Client
 pnpm db:push      # Push schema to database
-pnpm db:migrate   # Run migrations
-pnpm db:studio    # Mở Prisma Studio
 pnpm db:seed      # Seed roles & permissions
+pnpm db:seed:admin # Seed super admin user
 ```
 
 ## Database Setup
-
-PostgreSQL chạy qua Docker (port 5433 để tránh xung đột với local PostgreSQL):
 
 ```bash
 docker compose up -d     # Start PostgreSQL
 pnpm db:push             # Push schema
 pnpm db:seed             # Seed permissions
+pnpm db:seed:admin       # Seed admin user
 ```
 
-Connection string: `postgresql://techforge:techforge123@127.0.0.1:5433/techforge`
+Connection: `postgresql://techforge:techforge123@127.0.0.1:5433/techforge`
 
-## Architecture
+## Documentation
 
-Kiến trúc dựa trên MedusaJS, đơn giản hóa cho quy mô nhỏ (<1000 sản phẩm), chỉ hỗ trợ 1 ngôn ngữ (Tiếng Việt).
+- `docs/ARCHITECTURE.md` - Kiến trúc hệ thống
+- `docs/PROJECT_STRUCTURE.md` - Cấu trúc project
+- `docs/API_ENDPOINTS.md` - API reference
+- `docs/DATABASE_SCHEMA.md` - Database schema
+- `docs/PERMISSION_SYSTEM.md` - Hệ thống phân quyền
 
-### Product System (MedusaJS style)
+---
 
-```
-Product → ProductOption → ProductOptionValue
-                ↓
-         ProductVariant (kết hợp các option values)
-```
+## Conventions (QUAN TRỌNG)
 
-### BOM (Bill of Materials)
+### Code Style
 
-PC builds sử dụng BOM system - khi bán PC sẽ tự động trừ tồn kho của các components.
-
-### Pricing
-
-- Base price trên mỗi variant
-- Price Lists: Override giá theo thời gian (flash sale, seasonal)
-- Promotions: Mã giảm giá, Buy X Get Y (KHÔNG theo nhóm khách hàng)
-- Customer Groups: Chỉ dùng cho marketing/email, không ảnh hưởng giá
-
-### Permission System
-
-RBAC với phân quyền chi tiết:
-
-- Resource + Action (CREATE/READ/UPDATE/DELETE/MANAGE) + Scope (OWN/ALL)
-- Mỗi tính năng trên Admin Dashboard đều có thể phân quyền
-- Default roles: super_admin, admin, product_manager, order_manager, content_writer, support, customer
-
-### Authentication
-
-- Session-based authentication với cookie
-- Password hashing với scrypt
-- Middleware: `auth`, `admin`, `guest`
-
-## Database
-
-Schema file: `prisma/schema.prisma`
-
-### Main Modules
-
-1. User & Auth (User, Role, Permission, Session, Address)
-2. Product (Category, Product, ProductOption, ProductOptionValue, ProductVariant)
-3. BOM (BOMItem - cho PC builds)
-4. Pricing (PriceList, PriceListItem)
-5. Promotion (Promotion, PromotionRule, BuyXGetYPromotion)
-6. Cart (Cart, CartItem)
-7. Order (Order, OrderItem)
-8. Payment (Payment - VietQR, COD)
-9. Fulfillment
-10. Review & Q&A
-11. Blog
-12. Chat (ChatSession, ChatMessage)
-13. Settings & Media
-
-## Project Structure
-
-```
-tech-forge/
-├── app/
-│   ├── assets/css/main.css      # Tailwind + Nuxt UI imports
-│   ├── composables/
-│   │   └── useAuth.ts           # Auth composable
-│   ├── layouts/
-│   │   ├── default.vue          # Store layout
-│   │   └── admin.vue            # Admin dashboard layout
-│   ├── middleware/
-│   │   ├── auth.ts              # Require login
-│   │   ├── admin.ts             # Require admin role
-│   │   └── guest.ts             # Only for guests
-│   ├── pages/
-│   │   ├── index.vue
-│   │   ├── login.vue
-│   │   ├── register.vue
-│   │   └── admin/
-│   │       ├── index.vue        # Dashboard
-│   │       ├── roles/
-│   │       │   ├── index.vue    # Roles list
-│   │       │   └── [id].vue     # Role edit/create
-│   │       └── settings/
-│   │           └── index.vue    # Settings management
-│   └── app.vue
-├── server/
-│   ├── api/
-│   │   ├── auth/                # Auth endpoints
-│   │   ├── settings/            # Public settings
-│   │   └── admin/
-│   │       ├── categories/      # Categories CRUD
-│   │       ├── roles/           # Roles CRUD
-│   │       ├── permissions/     # Permissions list
-│   │       └── settings/        # Settings CRUD
-│   └── utils/
-│       ├── prisma.ts            # Prisma client singleton
-│       ├── password.ts          # Password hashing
-│       ├── session.ts           # Session management
-│       └── slug.ts              # Slug generation (uses @vt7/utils)
-├── shared/
-│   └── types/                   # Shared types (server + client)
-│       ├── index.ts             # Re-export all types
-│       ├── auth.ts              # Auth types
-│       ├── user.ts              # User, UserDetail
-│       ├── role.ts              # Role, RoleDetail, Permission
-│       ├── category.ts          # Category, CategoryDetail
-│       ├── settings.ts          # Setting, GroupedSettings
-│       ├── address.ts           # Address types
-│       ├── permission.ts        # Permission types
-│       └── common.ts            # Pagination, API responses
-├── prisma/
-│   ├── schema.prisma
-│   ├── prisma.config.ts         # Prisma 7 config
-│   ├── seed-permissions.ts      # Seed roles & permissions
-│   ├── seed-admin.ts            # Seed super admin user
-│   └── tsconfig.json            # TypeScript config for prisma/
-├── docs/
-├── nuxt.config.ts
-├── eslint.config.mjs
-├── .prettierrc
-├── docker-compose.yml
-└── package.json
-```
-
-## Conventions
-
-### Code Style (Prettier)
-
-```json
-{
-  "htmlWhitespaceSensitivity": "ignore",
-  "semi": false,
-  "arrowParens": "avoid",
-  "singleQuote": true,
-  "endOfLine": "auto",
-  "tabWidth": 2,
-  "printWidth": 120
-}
-```
-
-### Vue File Structure
-
-Thứ tự các block trong file `.vue`:
-
-```vue
-<template>
-  <!-- HTML template -->
-</template>
-
-<script setup lang="ts">
-// Logic
-</script>
-
-<style scoped>
-/* Styles */
-</style>
-```
+- Prettier với semi: false, singleQuote: true
+- Vue file order: `<template>` → `<script>` → `<style>`
 
 ### Naming
 
-- Database tables: snake_case (via @map)
-- Prisma models: PascalCase
-- API routes: kebab-case
-- Components: PascalCase
-- Composables: useCamelCase
+| Type | Convention | Ví dụ |
+|------|------------|-------|
+| Database tables | snake_case | `user_roles` |
+| Prisma models | PascalCase | `UserRole` |
+| API routes | kebab-case | `/api/admin/users` |
+| Components | PascalCase | `UserTable.vue` |
+| Composables | useCamelCase | `useAuth` |
+
+### ID Format
+
+ID của mỗi bảng phải có prefix:
+
+| Bảng | Prefix | Ví dụ |
+|------|--------|-------|
+| User | `user_` | `user_abc123` |
+| Role | `role_` | `role_abc123` |
+| Permission | `perm_` | `perm_abc123` |
+| Category | `cat_` | `cat_abc123` |
+| Product | `prod_` | `prod_abc123` |
+| Order | `order_` | `order_abc123` |
+| Session | `sess_` | `sess_abc123` |
+
+```ts
+// Sử dụng (auto-import trong server/)
+const user = await prisma.user.create({
+  data: {
+    id: generateId('user'),
+    email: '...',
+  }
+})
+```
 
 ### Currency
 
 - VND (Vietnamese Dong)
 - Decimal(15, 0) - không cần số thập phân
 
-### Address Format (Vietnam)
-
-- addressLine, ward (Phường/Xã), district (Quận/Huyện), province (Tỉnh/TP)
+---
 
 ## Current Progress
 
 ### Completed
-
-- [x] Requirements gathering
-- [x] Architecture design
-- [x] Database schema (Prisma)
-- [x] Permission system design
-- [x] Documentation
-- [x] Initialize Nuxt 4 project
-- [x] Setup @nuxt/ui + Tailwind CSS v4
-- [x] Setup ESLint + Prettier + vue-tsc
-- [x] Setup PostgreSQL (Docker) + Prisma 7
-- [x] Create layouts (default, admin)
-- [x] Implement Auth module (login, register, logout, session)
-- [x] Seed roles & permissions
-- [x] Tạo super_admin user (admin@techforge.vn / Admin@123)
-- [x] Categories API (CRUD)
-- [x] Roles API (CRUD + permission assignment)
-- [x] Permissions API (list grouped)
-- [x] Settings API (CRUD + public endpoint)
-- [x] Admin UI: Roles management (list, create, edit, delete, permissions)
-- [x] Admin UI: Settings management (CRUD với JSON support)
-- [x] Admin UI: Categories management (list, create, edit, delete, hierarchical structure)
-
-- [x] Users API (CRUD + search, filter, pagination)
-- [x] Admin UI: Users management (list, create, edit, search, filter)
-- [x] Shared Types system (`shared/types/` - centralized types)
-- [x] VueUse integration (@vueuse/nuxt)
+- [x] Auth module (login, register, logout, session)
+- [x] Categories API + Admin UI
+- [x] Roles API + Admin UI
+- [x] Permissions API
+- [x] Settings API + Admin UI
+- [x] Users API + Admin UI
+- [x] Shared Types system
+- [x] VueUse integration
 
 ### Next Steps
-- [ ] Implement Product module (API + UI)
-- [ ] Implement Cart module
-- [ ] Implement Order module
-- [ ] Implement Payment (VietQR, COD)
-- [ ] ... (continue with other modules)
+- [ ] Product module (API + UI)
+- [ ] Cart module
+- [ ] Order module
+- [ ] Payment (VietQR, COD)
+
+---
 
 ## Key Decisions
 
-1. **MedusaJS-inspired but simplified**: Không cần full complexity của MedusaJS
+1. **MedusaJS-inspired but simplified**: Đơn giản cho quy mô nhỏ
 2. **Single language**: Chỉ Tiếng Việt, không i18n
-3. **Single warehouse**: Không multi-location inventory
-4. **No customer group pricing**: Customer groups chỉ cho marketing
-5. **BOM for PC builds**: Quan trọng - tự động trừ tồn kho components
-6. **Permission per feature**: Mọi tính năng admin đều phân quyền được
-7. **Nuxt UI over shadcn**: Sử dụng @nuxt/ui chính thức thay vì shadcn-vue
-8. **Prisma 7 with adapter**: Sử dụng @prisma/adapter-pg cho PostgreSQL
-9. **Session-based auth**: Không dùng JWT, dùng session cookie
+3. **BOM for PC builds**: Tự động trừ tồn kho components
+4. **Session-based auth**: Không dùng JWT
+5. **Nuxt UI over shadcn**: Sử dụng @nuxt/ui chính thức
 
-## API Endpoints
+---
 
-Xem chi tiết tại: `docs/API_ENDPOINTS.md`
+## DRY Principle (BẮT BUỘC)
 
-## Important Files
+**LUÔN tuân thủ DRY (Don't Repeat Yourself):**
 
-### Configuration
-- `nuxt.config.ts` - Nuxt configuration
-- `prisma/schema.prisma` - Database schema
-- `prisma/prisma.config.ts` - Prisma 7 configuration
-- `eslint.config.mjs` - ESLint configuration
-- `.prettierrc` - Prettier configuration
-- `docker-compose.yml` - PostgreSQL Docker setup
+1. **Shared utilities** → `shared/utils/`
+   - Logic dùng chung giữa server và client
+   - Ví dụ: `generateId()` trong `shared/utils/id.ts`
 
-### Server Utils
-- `server/utils/prisma.ts` - Prisma client singleton
-- `server/utils/session.ts` - Session management (`getSessionUser`)
-- `server/utils/password.ts` - Password hashing (scrypt)
-- `server/utils/slug.ts` - Slug generation (Vietnamese support)
+2. **Shared types** → `shared/types/`
+   - Types dùng chung, không define inline
 
-### App
-- `app/composables/useAuth.ts` - Auth composable
-- `app/layouts/admin.vue` - Admin dashboard layout
-- `app/assets/css/main.css` - Global CSS với Tailwind
+3. **Server utils** → `server/utils/`
+   - Re-export từ shared hoặc logic chỉ dùng trong server
+   - Được auto-import trong API routes
 
-### Prisma
-- `prisma/seed-permissions.ts` - Seed 84 permissions, 7 roles
-- `prisma/seed-admin.ts` - Seed super admin user
+4. **Trước khi viết code mới:**
+   - Kiểm tra xem đã có utility/function tương tự chưa
+   - Kiểm tra `@vt7/utils` trước khi viết utility functions
+   - Kiểm tra `shared/` trước khi tạo code mới
 
-### Documentation
-- `docs/API_ENDPOINTS.md` - API endpoints reference
-- `docs/DATABASE_SCHEMA.md` - Database documentation
-- `docs/PERMISSION_SYSTEM.md` - Permission system guide
+5. **Khi thấy code lặp lại:**
+   - Extract thành function/component riêng
+   - Đặt vào đúng vị trí (shared/ hoặc server/utils/)
 
-## Notes for Development
+---
 
-- Khi phát triển từng tính năng, cần hỏi lại user để làm rõ chi tiết
-- Luôn tuân theo patterns đã định nghĩa trong schema
-- AI/RAG features sẽ thêm sau, không cần implement ngay
-- Sử dụng Nuxt UI components thay vì tự build UI từ đầu
-- Chạy `pnpm lint && pnpm format && pnpm typecheck` trước khi commit
-- Server utils (`server/utils/`) được auto-import trong API routes
-- **QUAN TRỌNG**: Không đặt tên function trùng với h3 built-in (getSession, getCookie, etc.)
-  - Dùng `getSessionUser` thay vì `getSession` để tránh xung đột với h3
+## Development Rules (QUAN TRỌNG)
 
-### Admin Page Template
+### Shared Types
 
-```vue
-<template>
-  <div class="flex h-full min-h-0 flex-col">
-    <UDashboardNavbar title="Page Title">
-      <template #leading>
-        <UDashboardSidebarCollapse />
-      </template>
-    </UDashboardNavbar>
-
-    <div class="min-h-0 flex-1 overflow-y-auto p-6">
-      <!-- Content here -->
-    </div>
-  </div>
-</template>
-```
-
-**Lưu ý scroll**: Cần `h-full min-h-0` ở root và `min-h-0 flex-1 overflow-y-auto` ở content area
-
-## @vt7/utils - QUAN TRỌNG
-
-**LUÔN sử dụng @vt7/utils cho các utility functions thay vì viết lại:**
+**LUÔN sử dụng types từ `#shared/types`:**
 
 ```ts
-import { removeVietnameseTones, toKebabCase, cloneDeep, ... } from '@vt7/utils'
+import type { User, Category, Role } from '#shared/types'
 ```
 
-Các functions thường dùng:
-- `removeVietnameseTones(str)` - Bỏ dấu tiếng Việt
-- `toKebabCase(str)` - Chuyển thành kebab-case (dùng cho slug)
-- `cloneDeep(obj)` - Deep clone object
-- `omit(obj, ...keys)` - Loại bỏ keys từ object
-- `pick(obj, ...keys)` - Chọn keys từ object
-- `isEmpty(v)` - Kiểm tra empty
-- `formatCurrency(num)` - Format tiền tệ
+| Type | Mô tả |
+|------|-------|
+| `Entity` | List view (User, Category) |
+| `EntityDetail` | Detail view (UserDetail) |
+| `EntityOption` | Select options (RoleOption) |
+| `EntityInput` | Create/update input |
 
-Xem đầy đủ tại: `node_modules/@vt7/utils/CLAUDE.md`
+### @vt7/utils
 
-## Shared Types - QUAN TRỌNG
-
-**LUÔN sử dụng types từ `#shared/types` thay vì định nghĩa inline:**
+**LUÔN sử dụng thay vì viết lại:**
 
 ```ts
-import type { User, Category, Role, Setting } from '#shared/types'
+import { removeVietnameseTones, toKebabCase, cloneDeep } from '@vt7/utils'
 ```
 
-### Cấu trúc:
-- `shared/types/index.ts` - Re-export tất cả types
-- Mỗi module có file riêng: `user.ts`, `category.ts`, `role.ts`, etc.
+### Nuxt UI v4
 
-### Quy tắc đặt tên:
-| Type | Mô tả | Ví dụ |
-|------|-------|-------|
-| `Entity` | Dùng cho list view | `User`, `Category`, `Role` |
-| `EntityDetail` | Dùng cho detail/edit view | `UserDetail`, `CategoryDetail` |
-| `EntityOption` | Dùng cho select options | `RoleOption`, `CategoryOption` |
-| `EntityInput` | Dùng cho create/update input | `CategoryInput`, `SettingInput` |
-
-### Lý do:
-- **Consistency**: Một nguồn duy nhất cho type definitions
-- **Reusability**: Server và client dùng chung types
-- **Maintainability**: Thay đổi type ở một nơi, apply toàn bộ codebase
-- **Type safety**: useFetch sẽ infer type từ generic parameter
-
-### Ví dụ sử dụng:
-
-```ts
-// Trong Vue component
-import type { User, UserDetail } from '#shared/types'
-
-const { data: users } = await useFetch<User[]>('/api/admin/users')
-const { data: user } = await useFetch<UserDetail>(`/api/admin/users/${id}`)
-```
-
-```ts
-// Trong API route (server)
-import type { User } from '#shared/types'
-
-export default defineEventHandler(async (): Promise<User[]> => {
-  // ...
-})
-```
-
-## Nuxt UI v4 - QUAN TRỌNG
-
-**LUÔN sử dụng MCP tools để tra cứu documentation trước khi dùng bất kỳ component nào của @nuxt/ui:**
+**LUÔN tra cứu MCP tools trước khi dùng component:**
 
 ```
-# Liệt kê tất cả components
 mcp__nuxt-ui__list-components
-
-# Xem chi tiết component (thay ComponentName bằng tên thực tế)
-mcp__nuxt-ui__get-component(componentName: "Table", sections: ["usage", "api"])
+mcp__nuxt-ui__get-component(componentName: "Table")
 ```
 
-### Lý do:
-- Nuxt UI v4 có API khác hoàn toàn so với v2/v3
-- Nhiều component đã đổi tên hoặc cấu trúc props
-- Không đoán mò component name hoặc props
+Nuxt UI v4 API khác hoàn toàn so với v2/v3.
 
-### Ví dụ thay đổi quan trọng:
-| Cũ (v2/v3) | Mới (v4) |
-|------------|----------|
-| `UDashboardLayout` | `UDashboardGroup` |
-| `UDashboardSidebarLinks` | `UNavigationMenu` với `orientation="vertical"` |
-| `UDashboardMain` | `UDashboardPanel` |
-| `UTable :columns="[{key, label}]" :rows="[]"` | `UTable :columns="[{accessorKey, header}]" :data="[]"` |
+### Other Rules
+
+- Chạy `pnpm lint && pnpm format && pnpm typecheck` trước khi commit
+- Không đặt tên function trùng h3 built-in (dùng `getSessionUser` thay vì `getSession`)
+- Server utils (`server/utils/`) được auto-import

@@ -30,6 +30,7 @@ export default defineEventHandler(async event => {
 
   const role = await prisma.role.create({
     data: {
+      id: generateId('role'),
       name: body.name.trim(),
       displayName: body.displayName.trim(),
       description: body.description?.trim() || null,

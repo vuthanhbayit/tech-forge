@@ -9,8 +9,8 @@ import { config } from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
-import { randomBytes, scrypt } from 'node:crypto'
-import { promisify } from 'node:util'
+import { generateId } from '../shared/utils/id'
+import { hashPassword } from '../shared/utils/password'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 config({ path: path.join(__dirname, '..', '.env') })
@@ -18,14 +18,6 @@ config({ path: path.join(__dirname, '..', '.env') })
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
-
-const scryptAsync = promisify(scrypt)
-
-async function hashPassword(password: string): Promise<string> {
-  const salt = randomBytes(32).toString('hex')
-  const derivedKey = (await scryptAsync(password, salt, 64)) as Buffer
-  return `${salt}:${derivedKey.toString('hex')}`
-}
 
 async function seedAdmin() {
   const email = 'admin@techforge.vn'
@@ -57,6 +49,7 @@ async function seedAdmin() {
   const passwordHash = await hashPassword(password)
   const user = await prisma.user.create({
     data: {
+      id: generateId('user'),
       email,
       passwordHash,
       firstName: 'Super',

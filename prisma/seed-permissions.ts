@@ -14,6 +14,7 @@ import { config } from 'dotenv'
 import { PrismaClient, PermissionAction, PermissionScope } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
+import { generateId } from '../shared/utils/id'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 config({ path: path.join(__dirname, '..', '.env') })
@@ -343,6 +344,7 @@ async function seedPermissions() {
 
       for (const scope of scopes) {
         permissionData.push({
+          id: generateId('permission'),
           resource,
           action: perm.action as PermissionAction,
           scope: scope as PermissionScope,
@@ -384,6 +386,7 @@ async function seedPermissions() {
         description: roleConfig.description,
       },
       create: {
+        id: generateId('role'),
         name: roleName,
         displayName: roleConfig.displayName,
         description: roleConfig.description,

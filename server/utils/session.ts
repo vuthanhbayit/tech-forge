@@ -19,6 +19,7 @@ export async function createSession(userId: string, event: H3Event) {
 
   const session = await prisma.session.create({
     data: {
+      id: generateId('session'),
       token,
       userId,
       userAgent,
