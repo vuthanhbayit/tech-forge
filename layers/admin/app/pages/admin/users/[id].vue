@@ -1,5 +1,7 @@
 <script lang="ts" setup>
+import type { FormErrorEvent } from '@nuxt/ui'
 import type { UserDetail } from '#shared/types'
+import { MIN_PASSWORD_LENGTH } from '#shared/utils'
 
 definePageMeta({
   layout: 'admin',
@@ -10,6 +12,7 @@ const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const { hasPermission } = useAuth()
+const { scrollToError } = useFormScroll()
 
 const userId = computed(() => route.params.id as string)
 const isNew = computed(() => userId.value === 'new')
@@ -78,8 +81,8 @@ function validate(formState: typeof state) {
     errors.push({ name: 'password', message: 'Mật khẩu là bắt buộc cho người dùng mới' })
   }
 
-  if (formState.password && formState.password.length < 6) {
-    errors.push({ name: 'password', message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+  if (formState.password && formState.password.length < MIN_PASSWORD_LENGTH) {
+    errors.push({ name: 'password', message: `Mật khẩu phải có ít nhất ${MIN_PASSWORD_LENGTH} ký tự` })
   }
 
   return errors
@@ -87,6 +90,10 @@ function validate(formState: typeof state) {
 
 // Submit
 const loading = ref(false)
+
+function onError(event: FormErrorEvent) {
+  scrollToError(event.errors)
+}
 
 async function onSubmit() {
   loading.value = true
@@ -156,7 +163,7 @@ function formatDate(date: string | null): string {
 
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
       <div class="mx-auto max-w-4xl">
-        <UForm :state="state" :validate="validate" class="space-y-6" @submit="onSubmit">
+        <UForm :state="state" :validate="validate" class="space-y-6" @error="onError" @submit="onSubmit">
           <!-- Basic Info -->
           <UCard>
             <template #header>

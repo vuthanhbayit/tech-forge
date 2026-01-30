@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { FormSubmitEvent } from '@nuxt/ui'
+import type { FormErrorEvent, FormSubmitEvent } from '@nuxt/ui'
 import type { CategoryDetail, CategoryOption } from '#shared/types'
 import { removeVietnameseTones, toKebabCase } from '@vt7/utils'
 
@@ -11,6 +11,7 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { scrollToError } = useFormScroll()
 
 const categoryId = computed(() => route.params.id as string)
 const isNew = computed(() => categoryId.value === 'new')
@@ -125,6 +126,10 @@ function validate(formState: typeof state) {
 // Submit
 const loading = ref(false)
 
+function onError(event: FormErrorEvent) {
+  scrollToError(event.errors)
+}
+
 async function onSubmit(event: FormSubmitEvent<typeof state>) {
   loading.value = true
   try {
@@ -177,7 +182,7 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
     </UDashboardNavbar>
 
     <div class="min-h-0 flex-1 overflow-y-auto p-6">
-      <UForm :state="state" :validate="validate" class="space-y-6" @submit="onSubmit">
+      <UForm :state="state" :validate="validate" class="space-y-6" @error="onError" @submit="onSubmit">
         <!-- Basic Info -->
         <UCard>
           <template #header>
