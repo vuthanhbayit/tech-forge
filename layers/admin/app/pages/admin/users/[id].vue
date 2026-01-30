@@ -213,6 +213,7 @@ function formatDate(date: string | null): string {
                   :disabled="!canChangeRole"
                   :items="roleOptions"
                   class="w-full"
+                  clear
                   placeholder="— Không có role —"
                   value-key="value"
                 />
