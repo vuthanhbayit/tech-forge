@@ -46,6 +46,7 @@ const sidebarItems: NavigationMenuItem[][] = [
       to: '/admin/settings',
       children: [
         { label: 'Chung', to: '/admin/settings' },
+        { label: 'Người dùng', to: '/admin/users' },
         { label: 'Roles', to: '/admin/roles' },
       ],
     },

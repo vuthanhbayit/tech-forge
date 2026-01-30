@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Setting, GroupedSettings } from '#shared/types'
+
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
@@ -8,18 +10,10 @@ useSeoMeta({
   title: 'Cài đặt - TechForge Admin',
 })
 
-interface Setting {
-  id: string
-  key: string
-  value: unknown
-  group: string | null
-  isPublic: boolean
-}
-
 const toast = useToast()
 
 // Fetch settings grouped
-const { data: settingsGrouped, refresh } = await useFetch<Record<string, Setting[]>>('/api/admin/settings', {
+const { data: settingsGrouped, refresh } = await useFetch<GroupedSettings>('/api/admin/settings', {
   query: { grouped: true },
 })
 

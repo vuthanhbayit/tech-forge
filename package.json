@@ -25,6 +25,8 @@
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
     "@vt7/utils": "^7.0.1",
+    "@vueuse/core": "^14.1.0",
+    "@vueuse/nuxt": "^14.1.0",
     "nuxt": "^4.3.0",
     "pg": "^8.17.2",
     "vue": "^3.5.27",

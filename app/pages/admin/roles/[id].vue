@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { Permission, RoleDetail, GroupedPermissions } from '#shared/types'
 
 definePageMeta({
   layout: 'admin',
@@ -17,37 +18,13 @@ useSeoMeta({
   title: () => (isNew.value ? 'Thêm Role' : 'Sửa Role') + ' - TechForge Admin',
 })
 
-interface Permission {
-  id: string
-  resource: string
-  action: string
-  scope: string
-  name: string
-  description: string | null
-  group: string | null
-}
-
-interface RolePermission {
-  permission: Permission
-}
-
-interface Role {
-  id: string
-  name: string
-  displayName: string
-  description: string | null
-  isSystem: boolean
-  isDefault: boolean
-  permissions: RolePermission[]
-}
-
 // Fetch role data
-const { data: role } = await useFetch<Role>(`/api/admin/roles/${roleId.value}`, {
+const { data: role } = await useFetch<RoleDetail>(`/api/admin/roles/${roleId.value}`, {
   immediate: !isNew.value,
 })
 
 // Fetch all permissions
-const { data: permissionsGrouped } = await useFetch<Record<string, Permission[]>>('/api/admin/permissions', {
+const { data: permissionsGrouped } = await useFetch<GroupedPermissions>('/api/admin/permissions', {
   query: { grouped: true },
 })
 

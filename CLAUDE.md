@@ -145,6 +145,17 @@ tech-forge/
 │       ├── password.ts          # Password hashing
 │       ├── session.ts           # Session management
 │       └── slug.ts              # Slug generation (uses @vt7/utils)
+├── shared/
+│   └── types/                   # Shared types (server + client)
+│       ├── index.ts             # Re-export all types
+│       ├── auth.ts              # Auth types
+│       ├── user.ts              # User, UserDetail
+│       ├── role.ts              # Role, RoleDetail, Permission
+│       ├── category.ts          # Category, CategoryDetail
+│       ├── settings.ts          # Setting, GroupedSettings
+│       ├── address.ts           # Address types
+│       ├── permission.ts        # Permission types
+│       └── common.ts            # Pagination, API responses
 ├── prisma/
 │   ├── schema.prisma
 │   ├── prisma.config.ts         # Prisma 7 config
@@ -235,9 +246,13 @@ Thứ tự các block trong file `.vue`:
 - [x] Admin UI: Settings management (CRUD với JSON support)
 - [x] Admin UI: Categories management (list, create, edit, delete, hierarchical structure)
 
+- [x] Users API (CRUD + search, filter, pagination)
+- [x] Admin UI: Users management (list, create, edit, search, filter)
+- [x] Shared Types system (`shared/types/` - centralized types)
+- [x] VueUse integration (@vueuse/nuxt)
+
 ### Next Steps
 - [ ] Implement Product module (API + UI)
-- [ ] Implement Users management (admin)
 - [ ] Implement Cart module
 - [ ] Implement Order module
 - [ ] Implement Payment (VietQR, COD)
@@ -257,50 +272,7 @@ Thứ tự các block trong file `.vue`:
 
 ## API Endpoints
 
-### Auth
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| POST | `/api/auth/login` | Đăng nhập |
-| POST | `/api/auth/register` | Đăng ký |
-| POST | `/api/auth/logout` | Đăng xuất |
-| GET | `/api/auth/me` | Thông tin user hiện tại |
-
-### Admin - Categories
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/admin/categories` | Danh sách categories |
-| GET | `/api/admin/categories/:id` | Chi tiết category |
-| POST | `/api/admin/categories` | Tạo category |
-| PUT | `/api/admin/categories/:id` | Cập nhật category |
-| DELETE | `/api/admin/categories/:id` | Xóa category |
-
-### Admin - Roles
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/admin/roles` | Danh sách roles |
-| GET | `/api/admin/roles/:id` | Chi tiết role + permissions |
-| POST | `/api/admin/roles` | Tạo role |
-| PUT | `/api/admin/roles/:id` | Cập nhật role + permissions |
-| DELETE | `/api/admin/roles/:id` | Xóa role |
-
-### Admin - Permissions
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/admin/permissions` | Danh sách permissions (grouped) |
-
-### Admin - Settings
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/admin/settings` | Danh sách settings |
-| GET | `/api/admin/settings/:key` | Chi tiết setting |
-| PUT | `/api/admin/settings/:key` | Upsert setting |
-| POST | `/api/admin/settings` | Bulk upsert settings |
-| DELETE | `/api/admin/settings/:key` | Xóa setting |
-
-### Public
-| Method | Endpoint | Mô tả |
-|--------|----------|-------|
-| GET | `/api/settings` | Public settings (no auth) |
+Xem chi tiết tại: `docs/API_ENDPOINTS.md`
 
 ## Important Files
 
@@ -328,6 +300,7 @@ Thứ tự các block trong file `.vue`:
 - `prisma/seed-admin.ts` - Seed super admin user
 
 ### Documentation
+- `docs/API_ENDPOINTS.md` - API endpoints reference
 - `docs/DATABASE_SCHEMA.md` - Database documentation
 - `docs/PERMISSION_SYSTEM.md` - Permission system guide
 
@@ -380,6 +353,51 @@ Các functions thường dùng:
 - `formatCurrency(num)` - Format tiền tệ
 
 Xem đầy đủ tại: `node_modules/@vt7/utils/CLAUDE.md`
+
+## Shared Types - QUAN TRỌNG
+
+**LUÔN sử dụng types từ `#shared/types` thay vì định nghĩa inline:**
+
+```ts
+import type { User, Category, Role, Setting } from '#shared/types'
+```
+
+### Cấu trúc:
+- `shared/types/index.ts` - Re-export tất cả types
+- Mỗi module có file riêng: `user.ts`, `category.ts`, `role.ts`, etc.
+
+### Quy tắc đặt tên:
+| Type | Mô tả | Ví dụ |
+|------|-------|-------|
+| `Entity` | Dùng cho list view | `User`, `Category`, `Role` |
+| `EntityDetail` | Dùng cho detail/edit view | `UserDetail`, `CategoryDetail` |
+| `EntityOption` | Dùng cho select options | `RoleOption`, `CategoryOption` |
+| `EntityInput` | Dùng cho create/update input | `CategoryInput`, `SettingInput` |
+
+### Lý do:
+- **Consistency**: Một nguồn duy nhất cho type definitions
+- **Reusability**: Server và client dùng chung types
+- **Maintainability**: Thay đổi type ở một nơi, apply toàn bộ codebase
+- **Type safety**: useFetch sẽ infer type từ generic parameter
+
+### Ví dụ sử dụng:
+
+```ts
+// Trong Vue component
+import type { User, UserDetail } from '#shared/types'
+
+const { data: users } = await useFetch<User[]>('/api/admin/users')
+const { data: user } = await useFetch<UserDetail>(`/api/admin/users/${id}`)
+```
+
+```ts
+// Trong API route (server)
+import type { User } from '#shared/types'
+
+export default defineEventHandler(async (): Promise<User[]> => {
+  // ...
+})
+```
 
 ## Nuxt UI v4 - QUAN TRỌNG
 

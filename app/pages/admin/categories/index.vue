@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import type { Category } from '#shared/types'
 
 definePageMeta({
   layout: 'admin',
@@ -9,25 +10,6 @@ definePageMeta({
 useSeoMeta({
   title: 'Quản lý Danh mục - TechForge Admin',
 })
-
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  image: string | null
-  parentId: string | null
-  rank: number
-  isActive: boolean
-  _count: {
-    products: number
-    children: number
-  }
-  parent?: {
-    id: string
-    name: string
-  }
-}
 
 const { data: categories, refresh, status } = await useFetch<Category[]>('/api/admin/categories')
 

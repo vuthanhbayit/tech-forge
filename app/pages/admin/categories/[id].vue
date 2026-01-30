@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { FormSubmitEvent } from '@nuxt/ui'
+import type { CategoryDetail, CategoryOption } from '#shared/types'
 import { removeVietnameseTones, toKebabCase } from '@vt7/utils'
 
 definePageMeta({
@@ -18,31 +19,13 @@ useSeoMeta({
   title: () => (isNew.value ? 'Thêm danh mục' : 'Sửa danh mục') + ' - TechForge Admin',
 })
 
-interface Category {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  image: string | null
-  parentId: string | null
-  rank: number
-  isActive: boolean
-  specTemplate: any
-}
-
-interface ParentOption {
-  id: string
-  name: string
-  slug: string
-}
-
 // Fetch category data (for edit mode)
-const { data: category } = await useFetch<Category>(`/api/admin/categories/${categoryId.value}`, {
+const { data: category } = await useFetch<CategoryDetail>(`/api/admin/categories/${categoryId.value}`, {
   immediate: !isNew.value,
 })
 
 // Fetch parent category options
-const { data: allCategories } = await useFetch<ParentOption[]>('/api/admin/categories')
+const { data: allCategories } = await useFetch<CategoryOption[]>('/api/admin/categories')
 
 // Filter parent options (exclude self and children when editing)
 const parentOptions = computed(() => {

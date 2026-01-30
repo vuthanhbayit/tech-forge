@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn } from '@nuxt/ui'
+import type { Role } from '#shared/types'
 
 definePageMeta({
   layout: 'admin',
@@ -9,19 +10,6 @@ definePageMeta({
 useSeoMeta({
   title: 'Quản lý Roles - TechForge Admin',
 })
-
-interface Role {
-  id: string
-  name: string
-  displayName: string
-  description: string | null
-  isSystem: boolean
-  isDefault: boolean
-  _count: {
-    users: number
-    permissions: number
-  }
-}
 
 const { data: roles, refresh, status } = await useFetch<Role[]>('/api/admin/roles')
 
