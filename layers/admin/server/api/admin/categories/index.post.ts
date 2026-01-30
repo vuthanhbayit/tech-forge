@@ -3,12 +3,7 @@
  * Create a new category
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  // TODO: Check permission (categories:create)
+  await requirePermission(event, 'categories', 'CREATE')
 
   const body = await readBody(event)
 

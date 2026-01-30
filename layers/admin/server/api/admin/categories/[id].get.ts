@@ -3,10 +3,7 @@
  * Get single category by ID
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'categories', 'READ')
 
   const id = getRouterParam(event, 'id')
   if (!id) {

@@ -3,12 +3,7 @@
  * Delete a category
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  // TODO: Check permission (categories:delete)
+  await requirePermission(event, 'categories', 'DELETE')
 
   const id = getRouterParam(event, 'id')
   if (!id) {

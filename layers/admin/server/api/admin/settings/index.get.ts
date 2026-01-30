@@ -3,10 +3,7 @@
  * List all settings, optionally grouped
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'settings', 'READ')
 
   const query = getQuery(event)
   const group = query.group as string | undefined

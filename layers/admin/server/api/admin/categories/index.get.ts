@@ -3,13 +3,7 @@
  * List all categories with optional filters
  */
 export default defineEventHandler(async event => {
-  // Check authentication
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
-
-  // TODO: Check permission (categories:read)
+  await requirePermission(event, 'categories', 'READ')
 
   const query = getQuery(event)
   const parentId = query.parentId as string | undefined

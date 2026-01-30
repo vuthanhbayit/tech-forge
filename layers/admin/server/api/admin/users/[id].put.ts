@@ -1,3 +1,5 @@
+import { validateEmail, validatePassword, validatePhoneVN } from '#shared/utils'
+
 /**
  * PUT /api/admin/users/:id
  * Update user
@@ -29,9 +31,9 @@ export default defineEventHandler(async event => {
 
   // Validate email format if provided
   if (body.email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(body.email)) {
-      throw createError({ statusCode: 400, message: 'Invalid email format' })
+    const emailValidation = validateEmail(body.email)
+    if (!emailValidation.valid) {
+      throw createError({ statusCode: 400, message: emailValidation.error })
     }
 
     // Check if email is taken by another user
@@ -42,20 +44,25 @@ export default defineEventHandler(async event => {
       },
     })
     if (emailTaken) {
-      throw createError({ statusCode: 400, message: 'Email already exists' })
+      throw createError({ statusCode: 400, message: 'Email đã được sử dụng' })
     }
   }
 
-  // Check if phone is taken by another user (if provided)
+  // Validate and check if phone is taken by another user (if provided)
   if (body.phone) {
+    const phoneValidation = validatePhoneVN(body.phone)
+    if (!phoneValidation.valid) {
+      throw createError({ statusCode: 400, message: phoneValidation.error })
+    }
+
     const phoneTaken = await prisma.user.findFirst({
       where: {
-        phone: body.phone,
+        phone: phoneValidation.normalized,
         id: { not: id },
       },
     })
     if (phoneTaken) {
-      throw createError({ statusCode: 400, message: 'Phone number already exists' })
+      throw createError({ statusCode: 400, message: 'Số điện thoại đã được sử dụng' })
     }
   }
 
@@ -85,7 +92,7 @@ export default defineEventHandler(async event => {
   const updateData: Record<string, unknown> = {}
 
   if (body.email !== undefined) updateData.email = body.email.toLowerCase()
-  if (body.phone !== undefined) updateData.phone = body.phone || null
+  if (body.phone !== undefined) updateData.phone = body.phone ? validatePhoneVN(body.phone).normalized : null
   if (body.firstName !== undefined) updateData.firstName = body.firstName || null
   if (body.lastName !== undefined) updateData.lastName = body.lastName || null
   if (body.avatar !== undefined) updateData.avatar = body.avatar || null
@@ -95,8 +102,9 @@ export default defineEventHandler(async event => {
 
   // Hash new password if provided
   if (body.password) {
-    if (body.password.length < 6) {
-      throw createError({ statusCode: 400, message: 'Password must be at least 6 characters' })
+    const passwordValidation = validatePassword(body.password)
+    if (!passwordValidation.valid) {
+      throw createError({ statusCode: 400, message: passwordValidation.error })
     }
     updateData.passwordHash = await hashPassword(body.password)
   }

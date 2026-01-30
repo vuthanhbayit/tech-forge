@@ -1,24 +1,18 @@
+import { validateEmail, validatePassword, validatePhoneVN } from '#shared/utils'
+
 /**
  * POST /api/admin/users
  * Create a new user (admin creates user)
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'users', 'CREATE')
 
   const body = await readBody(event)
 
-  // Validate required fields
-  if (!body.email) {
-    throw createError({ statusCode: 400, message: 'Email is required' })
-  }
-
-  // Validate email format
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(body.email)) {
-    throw createError({ statusCode: 400, message: 'Invalid email format' })
+  // Validate email
+  const emailValidation = validateEmail(body.email)
+  if (!emailValidation.valid) {
+    throw createError({ statusCode: 400, message: emailValidation.error })
   }
 
   // Check if email already exists
@@ -29,13 +23,18 @@ export default defineEventHandler(async event => {
     throw createError({ statusCode: 400, message: 'Email already exists' })
   }
 
-  // Check if phone already exists (if provided)
+  // Validate and check if phone already exists (if provided)
   if (body.phone) {
+    const phoneValidation = validatePhoneVN(body.phone)
+    if (!phoneValidation.valid) {
+      throw createError({ statusCode: 400, message: phoneValidation.error })
+    }
+
     const existingPhone = await prisma.user.findUnique({
-      where: { phone: body.phone },
+      where: { phone: phoneValidation.normalized },
     })
     if (existingPhone) {
-      throw createError({ statusCode: 400, message: 'Phone number already exists' })
+      throw createError({ statusCode: 400, message: 'Số điện thoại đã được sử dụng' })
     }
   }
 
@@ -52,8 +51,9 @@ export default defineEventHandler(async event => {
   // Hash password if provided
   let passwordHash: string | null = null
   if (body.password) {
-    if (body.password.length < 6) {
-      throw createError({ statusCode: 400, message: 'Password must be at least 6 characters' })
+    const passwordValidation = validatePassword(body.password)
+    if (!passwordValidation.valid) {
+      throw createError({ statusCode: 400, message: passwordValidation.error })
     }
     passwordHash = await hashPassword(body.password)
   }
@@ -62,7 +62,7 @@ export default defineEventHandler(async event => {
     data: {
       id: generateId('user'),
       email: body.email.toLowerCase(),
-      phone: body.phone || null,
+      phone: body.phone ? validatePhoneVN(body.phone).normalized : null,
       passwordHash,
       firstName: body.firstName || null,
       lastName: body.lastName || null,

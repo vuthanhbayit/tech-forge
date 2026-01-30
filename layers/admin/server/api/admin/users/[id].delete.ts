@@ -3,10 +3,7 @@
  * Soft delete user
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  const session = await requirePermission(event, 'users', 'DELETE')
 
   const id = getRouterParam(event, 'id')
   if (!id) {

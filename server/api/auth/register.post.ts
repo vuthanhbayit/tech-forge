@@ -1,3 +1,5 @@
+import { validateEmail, validatePassword, validatePhoneVN } from '#shared/utils'
+
 interface RegisterBody {
   email: string
   password: string
@@ -9,18 +11,21 @@ interface RegisterBody {
 export default defineEventHandler(async event => {
   const body = await readBody<RegisterBody>(event)
 
-  // Validation
-  if (!body.email || !body.password) {
+  // Validate email
+  const emailValidation = validateEmail(body.email)
+  if (!emailValidation.valid) {
     throw createError({
       statusCode: 400,
-      message: 'Email và mật khẩu là bắt buộc',
+      message: emailValidation.error,
     })
   }
 
-  if (body.password.length < 6) {
+  // Validate password
+  const passwordValidation = validatePassword(body.password)
+  if (!passwordValidation.valid) {
     throw createError({
       statusCode: 400,
-      message: 'Mật khẩu phải có ít nhất 6 ký tự',
+      message: passwordValidation.error,
     })
   }
 
@@ -36,10 +41,20 @@ export default defineEventHandler(async event => {
     })
   }
 
-  // Check phone exists
+  // Validate and check phone exists
+  let normalizedPhone: string | undefined
   if (body.phone) {
+    const phoneValidation = validatePhoneVN(body.phone)
+    if (!phoneValidation.valid) {
+      throw createError({
+        statusCode: 400,
+        message: phoneValidation.error,
+      })
+    }
+    normalizedPhone = phoneValidation.normalized
+
     const existingPhone = await prisma.user.findUnique({
-      where: { phone: body.phone },
+      where: { phone: normalizedPhone },
     })
 
     if (existingPhone) {
@@ -64,7 +79,7 @@ export default defineEventHandler(async event => {
       passwordHash,
       firstName: body.firstName,
       lastName: body.lastName,
-      phone: body.phone,
+      phone: normalizedPhone,
       roleId: defaultRole?.id,
     },
     select: {

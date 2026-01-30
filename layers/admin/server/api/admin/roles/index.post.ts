@@ -3,10 +3,7 @@
  * Create a new role
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'roles', 'CREATE')
 
   const body = await readBody(event)
 

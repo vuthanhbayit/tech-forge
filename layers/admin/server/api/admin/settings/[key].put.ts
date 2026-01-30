@@ -3,10 +3,7 @@
  * Update or create a setting
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'settings', 'UPDATE')
 
   const key = getRouterParam(event, 'key')
   if (!key) {

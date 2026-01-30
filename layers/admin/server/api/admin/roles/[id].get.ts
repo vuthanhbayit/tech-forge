@@ -3,10 +3,7 @@
  * Get single role with permissions
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'roles', 'READ')
 
   const id = getRouterParam(event, 'id')
   if (!id) {

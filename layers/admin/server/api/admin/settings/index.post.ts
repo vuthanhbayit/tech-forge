@@ -5,10 +5,7 @@ import type { InputJsonValue } from '@prisma/client/runtime/client'
  * Bulk upsert settings
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'settings', 'CREATE')
 
   const body = await readBody(event)
 

@@ -3,10 +3,7 @@
  * List users with pagination, search, and filter
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'users', 'READ')
 
   const query = getQuery(event)
   const page = Number(query.page) || 1

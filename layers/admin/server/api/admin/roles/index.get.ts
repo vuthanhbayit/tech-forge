@@ -3,10 +3,7 @@
  * List all roles with user count
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  await requirePermission(event, 'roles', 'READ')
 
   const roles = await prisma.role.findMany({
     include: {
