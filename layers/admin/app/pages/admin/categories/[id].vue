@@ -75,7 +75,7 @@ watch(
       slugManuallyEdited.value = true // Don't auto-generate when editing
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // Auto-generate slug from name (only for new categories)
@@ -85,7 +85,7 @@ watch(
     if (isNew.value && !slugManuallyEdited.value && newName) {
       state.slug = toKebabCase(removeVietnameseTones(newName))
     }
-  }
+  },
 )
 
 // Mark slug as manually edited when user changes it
@@ -194,13 +194,21 @@ async function onSubmit(event: FormSubmitEvent<typeof state>) {
               <UInput v-model="state.slug" class="w-full" placeholder="laptop-gaming" @input="onSlugInput" />
               <template #hint>
                 <span class="text-xs text-neutral-500">
-                  {{ isNew && !slugManuallyEdited ? 'Tự động tạo từ tên' : 'Chỉ chứa chữ thường, số và dấu gạch ngang' }}
+                  {{
+                    isNew && !slugManuallyEdited ? 'Tự động tạo từ tên' : 'Chỉ chứa chữ thường, số và dấu gạch ngang'
+                  }}
                 </span>
               </template>
             </UFormField>
 
             <UFormField class="md:col-span-2" label="Danh mục cha" name="parentId">
-              <USelect v-model="state.parentId" :options="parentOptions" class="w-full" option-label="name" option-value="id" />
+              <USelect
+                v-model="state.parentId"
+                :options="parentOptions"
+                class="w-full"
+                option-label="name"
+                option-value="id"
+              />
             </UFormField>
 
             <UFormField class="md:col-span-2" label="Mô tả" name="description">

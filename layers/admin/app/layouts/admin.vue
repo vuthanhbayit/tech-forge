@@ -87,9 +87,7 @@ function filterMenuItems(items: MenuItem[]): NavigationMenuItem[] {
 }
 
 const sidebarItems = computed<NavigationMenuItem[][]>(() => {
-  return allSidebarItems
-    .map(group => filterMenuItems(group))
-    .filter(group => group.length > 0)
+  return allSidebarItems.map(group => filterMenuItems(group)).filter(group => group.length > 0)
 })
 </script>
 
@@ -105,11 +103,7 @@ const sidebarItems = computed<NavigationMenuItem[][]>(() => {
         </template>
 
         <template #default="{ collapsed }">
-          <UNavigationMenu
-            :collapsed="collapsed"
-            :items="sidebarItems"
-            orientation="vertical"
-          />
+          <UNavigationMenu :collapsed="collapsed" :items="sidebarItems" orientation="vertical" />
         </template>
 
         <template #footer="{ collapsed }">

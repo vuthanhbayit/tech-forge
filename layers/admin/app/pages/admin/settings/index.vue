@@ -232,7 +232,12 @@ function formatValue(value: unknown): string {
             <UInput v-model="newSetting.group" placeholder="general" class="w-full" />
           </UFormField>
           <UFormField label="Value">
-            <UTextarea v-model="newSetting.value" :rows="5" class="w-full font-mono text-sm" placeholder="Value (string hoặc JSON)" />
+            <UTextarea
+              v-model="newSetting.value"
+              :rows="5"
+              class="w-full font-mono text-sm"
+              placeholder="Value (string hoặc JSON)"
+            />
           </UFormField>
           <UCheckbox v-model="newSetting.isPublic" label="Cho phép truy cập từ frontend (Public)" />
         </div>

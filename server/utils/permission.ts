@@ -81,10 +81,7 @@ export async function requirePermission(
  * - Super admin can assign any role
  * - Others need roles:UPDATE permission and cannot assign roles with higher permissions
  */
-export function canAssignRole(
-  user: SessionUser | null,
-  targetRoleName: string | null,
-): boolean {
+export function canAssignRole(user: SessionUser | null, targetRoleName: string | null): boolean {
   if (!user?.role) return false
 
   // Super admin can assign any role

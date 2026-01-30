@@ -95,7 +95,7 @@ async function deleteCategory(category: Category) {
 
           <template #cell-name="{ row }">
             <div class="font-medium">{{ row.original.name }}</div>
-            <div v-if="row.original.description" class="text-sm text-neutral-500 line-clamp-1">
+            <div v-if="row.original.description" class="line-clamp-1 text-sm text-neutral-500">
               {{ row.original.description }}
             </div>
           </template>

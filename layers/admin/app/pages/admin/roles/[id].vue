@@ -49,7 +49,7 @@ watch(
       state.permissionIds = newRole.permissions.map(p => p.permission.id)
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 // Validation
@@ -130,12 +130,7 @@ function isGroupIndeterminate(groupPermissions: Permission[]) {
 
           <div class="grid gap-4 md:grid-cols-2">
             <UFormField label="Mã role" name="name" required>
-              <UInput
-                v-model="state.name"
-                placeholder="product_manager"
-                :disabled="role?.isSystem"
-                class="w-full"
-              />
+              <UInput v-model="state.name" placeholder="product_manager" :disabled="role?.isSystem" class="w-full" />
             </UFormField>
 
             <UFormField label="Tên hiển thị" name="displayName" required>
@@ -176,7 +171,9 @@ function isGroupIndeterminate(groupPermissions: Permission[]) {
               <!-- Group Header -->
               <div class="flex items-center gap-3 border-b pb-2">
                 <UCheckbox
-                  :model-value="isGroupChecked(permissions) ? true : isGroupIndeterminate(permissions) ? 'indeterminate' : false"
+                  :model-value="
+                    isGroupChecked(permissions) ? true : isGroupIndeterminate(permissions) ? 'indeterminate' : false
+                  "
                   :label="String(group)"
                   class="font-medium"
                   @update:model-value="toggleGroup(permissions, $event === true)"

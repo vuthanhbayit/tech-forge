@@ -4,13 +4,13 @@ Website ecommerce bán máy tính, phụ kiện và tư vấn công nghệ cho t
 
 ## Tech Stack
 
-| Component  | Technology                             |
-| ---------- | -------------------------------------- |
-| Framework  | Nuxt 4.3 với Nitro Server              |
-| UI         | @nuxt/ui 4.4 (bao gồm Tailwind CSS v4) |
-| Database   | PostgreSQL 16 + Prisma ORM 7.3         |
-| Language   | TypeScript 5.9                         |
-| Linting    | ESLint 9 + @nuxt/eslint + vue-tsc      |
+| Component | Technology                             |
+| --------- | -------------------------------------- |
+| Framework | Nuxt 4.3 với Nitro Server              |
+| UI        | @nuxt/ui 4.4 (bao gồm Tailwind CSS v4) |
+| Database  | PostgreSQL 16 + Prisma ORM 7.3         |
+| Language  | TypeScript 5.9                         |
+| Linting   | ESLint 9 + @nuxt/eslint + vue-tsc      |
 
 ## Scripts
 
@@ -56,27 +56,27 @@ Connection: `postgresql://techforge:techforge123@127.0.0.1:5433/techforge`
 
 ### Naming
 
-| Type | Convention | Ví dụ |
-|------|------------|-------|
-| Database tables | snake_case | `user_roles` |
-| Prisma models | PascalCase | `UserRole` |
-| API routes | kebab-case | `/api/admin/users` |
-| Components | PascalCase | `UserTable.vue` |
-| Composables | useCamelCase | `useAuth` |
+| Type            | Convention   | Ví dụ              |
+| --------------- | ------------ | ------------------ |
+| Database tables | snake_case   | `user_roles`       |
+| Prisma models   | PascalCase   | `UserRole`         |
+| API routes      | kebab-case   | `/api/admin/users` |
+| Components      | PascalCase   | `UserTable.vue`    |
+| Composables     | useCamelCase | `useAuth`          |
 
 ### ID Format
 
 ID của mỗi bảng phải có prefix:
 
-| Bảng | Prefix | Ví dụ |
-|------|--------|-------|
-| User | `user_` | `user_abc123` |
-| Role | `role_` | `role_abc123` |
-| Permission | `perm_` | `perm_abc123` |
-| Category | `cat_` | `cat_abc123` |
-| Product | `prod_` | `prod_abc123` |
-| Order | `order_` | `order_abc123` |
-| Session | `sess_` | `sess_abc123` |
+| Bảng       | Prefix   | Ví dụ          |
+| ---------- | -------- | -------------- |
+| User       | `user_`  | `user_abc123`  |
+| Role       | `role_`  | `role_abc123`  |
+| Permission | `perm_`  | `perm_abc123`  |
+| Category   | `cat_`   | `cat_abc123`   |
+| Product    | `prod_`  | `prod_abc123`  |
+| Order      | `order_` | `order_abc123` |
+| Session    | `sess_`  | `sess_abc123`  |
 
 ```ts
 // Sử dụng (auto-import trong server/)
@@ -84,7 +84,7 @@ const user = await prisma.user.create({
   data: {
     id: generateId('user'),
     email: '...',
-  }
+  },
 })
 ```
 
@@ -98,6 +98,7 @@ const user = await prisma.user.create({
 ## Current Progress
 
 ### Completed
+
 - [x] Auth module (login, register, logout, session)
 - [x] Categories API + Admin UI
 - [x] Roles API + Admin UI
@@ -108,6 +109,7 @@ const user = await prisma.user.create({
 - [x] VueUse integration
 
 ### Next Steps
+
 - [ ] Product module (API + UI)
 - [ ] Cart module
 - [ ] Order module
@@ -161,12 +163,12 @@ const user = await prisma.user.create({
 import type { User, Category, Role } from '#shared/types'
 ```
 
-| Type | Mô tả |
-|------|-------|
-| `Entity` | List view (User, Category) |
-| `EntityDetail` | Detail view (UserDetail) |
+| Type           | Mô tả                       |
+| -------------- | --------------------------- |
+| `Entity`       | List view (User, Category)  |
+| `EntityDetail` | Detail view (UserDetail)    |
 | `EntityOption` | Select options (RoleOption) |
-| `EntityInput` | Create/update input |
+| `EntityInput`  | Create/update input         |
 
 ### @vt7/utils
 

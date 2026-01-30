@@ -11,6 +11,7 @@ Product → ProductOption → ProductOptionValue
 ```
 
 **Ví dụ:**
+
 - Product: iPhone 15
 - ProductOption: Màu sắc, Dung lượng
 - ProductOptionValue: Đen, Trắng, 128GB, 256GB
@@ -21,6 +22,7 @@ Product → ProductOption → ProductOptionValue
 PC builds sử dụng BOM system - khi bán PC sẽ tự động trừ tồn kho của các components.
 
 **Flow:**
+
 1. Tạo Product "PC Gaming X1"
 2. Thêm BOM items: CPU, RAM, SSD, VGA, Case, PSU
 3. Khi bán 1 PC → tự động trừ tồn kho của tất cả components
@@ -61,20 +63,20 @@ Chi tiết: `docs/PERMISSION_SYSTEM.md`
 
 ## Database Modules
 
-| # | Module | Models |
-|---|--------|--------|
-| 1 | User & Auth | User, Role, Permission, Session, Address |
-| 2 | Product | Category, Product, ProductOption, ProductOptionValue, ProductVariant |
-| 3 | BOM | BOMItem (cho PC builds) |
-| 4 | Pricing | PriceList, PriceListItem |
-| 5 | Promotion | Promotion, PromotionRule, BuyXGetYPromotion |
-| 6 | Cart | Cart, CartItem |
-| 7 | Order | Order, OrderItem |
-| 8 | Payment | Payment (VietQR, COD) |
-| 9 | Fulfillment | Fulfillment, FulfillmentItem |
-| 10 | Review & Q&A | Review, ProductQuestion, ProductAnswer |
-| 11 | Blog | BlogPost, BlogCategory |
-| 12 | Chat | ChatSession, ChatMessage |
-| 13 | Settings & Media | Setting, Media |
+| #   | Module           | Models                                                               |
+| --- | ---------------- | -------------------------------------------------------------------- |
+| 1   | User & Auth      | User, Role, Permission, Session, Address                             |
+| 2   | Product          | Category, Product, ProductOption, ProductOptionValue, ProductVariant |
+| 3   | BOM              | BOMItem (cho PC builds)                                              |
+| 4   | Pricing          | PriceList, PriceListItem                                             |
+| 5   | Promotion        | Promotion, PromotionRule, BuyXGetYPromotion                          |
+| 6   | Cart             | Cart, CartItem                                                       |
+| 7   | Order            | Order, OrderItem                                                     |
+| 8   | Payment          | Payment (VietQR, COD)                                                |
+| 9   | Fulfillment      | Fulfillment, FulfillmentItem                                         |
+| 10  | Review & Q&A     | Review, ProductQuestion, ProductAnswer                               |
+| 11  | Blog             | BlogPost, BlogCategory                                               |
+| 12  | Chat             | ChatSession, ChatMessage                                             |
+| 13  | Settings & Media | Setting, Media                                                       |
 
 Chi tiết: `docs/DATABASE_SCHEMA.md`

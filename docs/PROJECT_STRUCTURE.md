@@ -97,56 +97,61 @@ tech-forge/
 
 Project sử dụng Nuxt Layers để modular hóa code:
 
-| Layer | Mô tả |
-|-------|-------|
+| Layer          | Mô tả                                       |
+| -------------- | ------------------------------------------- |
 | `layers/admin` | Admin dashboard module (pages, API, layout) |
 
 ### Tại sao dùng Layers?
+
 - **Separation of concerns**: Admin code tách biệt khỏi storefront
 - **Reusability**: Có thể reuse layer trong project khác
 - **Maintainability**: Dễ maintain và scale từng module
 - **Team collaboration**: Team có thể làm việc độc lập trên từng layer
 
 ### Cách thêm Layer mới
+
 ```bash
 mkdir -p layers/new-layer/{app,server}
 ```
 
-
 ## Important Files
 
 ### Configuration
-| File | Mô tả |
-|------|-------|
-| `nuxt.config.ts` | Main Nuxt config (extends layers) |
-| `layers/admin/nuxt.config.ts` | Admin layer config (SPA mode) |
-| `prisma/schema.prisma` | Database schema |
-| `prisma/prisma.config.ts` | Prisma 7 configuration |
-| `eslint.config.mjs` | ESLint configuration |
-| `.prettierrc` | Prettier configuration |
-| `docker-compose.yml` | PostgreSQL Docker setup |
+
+| File                          | Mô tả                             |
+| ----------------------------- | --------------------------------- |
+| `nuxt.config.ts`              | Main Nuxt config (extends layers) |
+| `layers/admin/nuxt.config.ts` | Admin layer config (SPA mode)     |
+| `prisma/schema.prisma`        | Database schema                   |
+| `prisma/prisma.config.ts`     | Prisma 7 configuration            |
+| `eslint.config.mjs`           | ESLint configuration              |
+| `.prettierrc`                 | Prettier configuration            |
+| `docker-compose.yml`          | PostgreSQL Docker setup           |
 
 ### Server Utils (auto-imported)
-| File | Mô tả |
-|------|-------|
-| `server/utils/prisma.ts` | Prisma client singleton |
-| `server/utils/session.ts` | Session management (`getSessionUser`) |
+
+| File                         | Mô tả                                     |
+| ---------------------------- | ----------------------------------------- |
+| `server/utils/prisma.ts`     | Prisma client singleton                   |
+| `server/utils/session.ts`    | Session management (`getSessionUser`)     |
 | `server/utils/permission.ts` | Permission checking (`requirePermission`) |
-| `server/utils/slug.ts` | Slug generation (Vietnamese support) |
-| `server/utils/events.ts` | Event system utilities |
+| `server/utils/slug.ts`       | Slug generation (Vietnamese support)      |
+| `server/utils/events.ts`     | Event system utilities                    |
 
 ### App
-| File | Mô tả |
-|------|-------|
-| `app/composables/useAuth.ts` | Auth composable |
-| `layers/admin/app/layouts/admin.vue` | Admin dashboard layout |
-| `app/assets/css/main.css` | Global CSS với Tailwind |
+
+| File                                 | Mô tả                   |
+| ------------------------------------ | ----------------------- |
+| `app/composables/useAuth.ts`         | Auth composable         |
+| `layers/admin/app/layouts/admin.vue` | Admin dashboard layout  |
+| `app/assets/css/main.css`            | Global CSS với Tailwind |
 
 ### Prisma
-| File | Mô tả |
-|------|-------|
+
+| File                         | Mô tả                        |
+| ---------------------------- | ---------------------------- |
 | `prisma/seed-permissions.ts` | Seed 84 permissions, 7 roles |
-| `prisma/seed-admin.ts` | Seed super admin user |
+| `prisma/seed-admin.ts`       | Seed super admin user        |
 
 ## Admin Page Template
 
