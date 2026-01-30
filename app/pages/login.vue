@@ -53,11 +53,11 @@ const onSubmit = async () => {
       <UCard>
         <UForm :state="form" class="space-y-4" @submit="onSubmit">
           <UFormField label="Email" name="email" required>
-            <UInput v-model="form.email" type="email" placeholder="email@example.com" size="lg" />
+            <UInput v-model="form.email" type="email" placeholder="email@example.com" size="lg" class="w-full" />
           </UFormField>
 
           <UFormField label="Mật khẩu" name="password" required>
-            <UInput v-model="form.password" type="password" placeholder="Nhập mật khẩu" size="lg" />
+            <UInput v-model="form.password" type="password" placeholder="Nhập mật khẩu" size="lg" class="w-full" />
           </UFormField>
 
           <UAlert v-if="error" color="error" :title="error" icon="i-heroicons-exclamation-circle" />

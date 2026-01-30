@@ -14,8 +14,8 @@ const toast = useToast()
 
 // Filters
 const search = ref('')
-const selectedRoleId = ref('')
-const selectedStatus = ref<string>('')
+const selectedRoleId = ref<string | undefined>(undefined)
+const selectedStatus = ref<string | undefined>(undefined)
 const page = ref(1)
 const limit = 20
 
@@ -23,34 +23,34 @@ const limit = 20
 const debouncedSearch = refDebounced(search, 300)
 
 // Fetch roles for filter
-const { data: roles } = await useFetch('/api/admin/roles')
+const { data: roles } = useFetch('/api/admin/roles')
 
 const roleOptions = computed(() => {
-  const options = [{ id: '', displayName: 'Tất cả roles' }]
-  if (roles.value) {
-    options.push(...roles.value.map(r => ({ id: r.id, displayName: r.displayName })))
-  }
-  return options
+  if (!roles.value) return []
+  return roles.value.map(r => ({ value: r.id, label: r.displayName }))
 })
 
 const statusOptions = [
-  { value: '', label: 'Tất cả trạng thái' },
   { value: 'true', label: 'Đang hoạt động' },
   { value: 'false', label: 'Đã vô hiệu hóa' },
 ]
+
+// Query params - only include if has value
+const queryRoleId = computed(() => selectedRoleId.value || undefined)
+const queryIsActive = computed(() => selectedStatus.value || undefined)
 
 // Fetch users
 const {
   data,
   refresh,
   status: fetchStatus,
-} = await useFetch('/api/admin/users', {
+} = useFetch('/api/admin/users', {
   query: {
     page,
     limit,
     search: debouncedSearch,
-    roleId: selectedRoleId,
-    isActive: selectedStatus,
+    roleId: queryRoleId,
+    isActive: queryIsActive,
   },
   watch: [page, debouncedSearch, selectedRoleId, selectedStatus],
 })
@@ -146,19 +146,23 @@ async function deleteUser() {
           icon="i-heroicons-magnifying-glass"
           placeholder="Tìm theo email, tên, SĐT..."
         />
-        <USelect
+        <USelectMenu
           v-model="selectedRoleId"
-          :options="roleOptions"
+          :items="roleOptions"
+          :search-input="false"
           class="w-48"
-          option-label="displayName"
-          option-value="id"
+          clear
+          placeholder="Tất cả roles"
+          value-key="value"
         />
-        <USelect
+        <USelectMenu
           v-model="selectedStatus"
-          :options="statusOptions"
+          :items="statusOptions"
+          :search-input="false"
           class="w-48"
-          option-label="label"
-          option-value="value"
+          clear
+          placeholder="Tất cả trạng thái"
+          value-key="value"
         />
         <span class="text-muted text-sm">{{ total }} người dùng</span>
       </div>

@@ -71,28 +71,28 @@ const onSubmit = async () => {
         <UForm :state="form" class="space-y-4" @submit="onSubmit">
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Họ" name="lastName">
-              <UInput v-model="form.lastName" placeholder="Nguyễn" />
+              <UInput v-model="form.lastName" placeholder="Nguyễn" class="w-full" />
             </UFormField>
 
             <UFormField label="Tên" name="firstName">
-              <UInput v-model="form.firstName" placeholder="Văn A" />
+              <UInput v-model="form.firstName" placeholder="Văn A" class="w-full" />
             </UFormField>
           </div>
 
           <UFormField label="Email" name="email" required>
-            <UInput v-model="form.email" type="email" placeholder="email@example.com" />
+            <UInput v-model="form.email" type="email" placeholder="email@example.com" class="w-full" />
           </UFormField>
 
           <UFormField label="Số điện thoại" name="phone">
-            <UInput v-model="form.phone" type="tel" placeholder="0912345678" />
+            <UInput v-model="form.phone" type="tel" placeholder="0912345678" class="w-full" />
           </UFormField>
 
           <UFormField label="Mật khẩu" name="password" required hint="Ít nhất 6 ký tự">
-            <UInput v-model="form.password" type="password" placeholder="Nhập mật khẩu" />
+            <UInput v-model="form.password" type="password" placeholder="Nhập mật khẩu" class="w-full" />
           </UFormField>
 
           <UFormField label="Xác nhận mật khẩu" name="confirmPassword" required>
-            <UInput v-model="form.confirmPassword" type="password" placeholder="Nhập lại mật khẩu" />
+            <UInput v-model="form.confirmPassword" type="password" placeholder="Nhập lại mật khẩu" class="w-full" />
           </UFormField>
 
           <UAlert v-if="error" color="error" :title="error" icon="i-heroicons-exclamation-circle" />

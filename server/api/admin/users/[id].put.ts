@@ -3,10 +3,8 @@
  * Update user
  */
 export default defineEventHandler(async event => {
-  const session = await getSessionUser(event)
-  if (!session) {
-    throw createError({ statusCode: 401, message: 'Unauthorized' })
-  }
+  // Check users:UPDATE permission
+  const session = await requirePermission(event, 'users', 'UPDATE')
 
   const id = getRouterParam(event, 'id')
   if (!id) {
@@ -18,9 +16,15 @@ export default defineEventHandler(async event => {
   // Check if user exists
   const existingUser = await prisma.user.findUnique({
     where: { id, deletedAt: null },
+    include: { role: true },
   })
   if (!existingUser) {
     throw createError({ statusCode: 404, message: 'User not found' })
+  }
+
+  // Cannot edit super_admin user (unless you are super_admin)
+  if (existingUser.role?.name === 'super_admin' && session.role?.name !== 'super_admin') {
+    throw createError({ statusCode: 403, message: 'Không thể chỉnh sửa Super Admin' })
   }
 
   // Validate email format if provided
@@ -55,13 +59,25 @@ export default defineEventHandler(async event => {
     }
   }
 
-  // Validate role exists (if provided)
-  if (body.roleId) {
-    const role = await prisma.role.findUnique({
-      where: { id: body.roleId },
-    })
-    if (!role) {
-      throw createError({ statusCode: 400, message: 'Role not found' })
+  // Validate and check permission for role change
+  if (body.roleId !== undefined && body.roleId !== existingUser.roleId) {
+    // Need roles:UPDATE permission to change user's role
+    if (!hasPermission(session, 'roles', 'UPDATE')) {
+      throw createError({ statusCode: 403, message: 'Bạn không có quyền thay đổi role của người dùng' })
+    }
+
+    if (body.roleId) {
+      const targetRole = await prisma.role.findUnique({
+        where: { id: body.roleId },
+      })
+      if (!targetRole) {
+        throw createError({ statusCode: 400, message: 'Role not found' })
+      }
+
+      // Cannot assign super_admin role (unless you are super_admin)
+      if (targetRole.name === 'super_admin' && session.role?.name !== 'super_admin') {
+        throw createError({ statusCode: 403, message: 'Không thể gán role Super Admin' })
+      }
     }
   }
 

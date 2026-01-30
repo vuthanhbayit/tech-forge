@@ -76,6 +76,9 @@ export const useAuth = () => {
 
   // Permission helpers
   const hasPermission = (resource: string, action: string) => {
+    // Super admin has all permissions
+    if (user.value?.role === 'super_admin') return true
+
     if (!user.value?.permissions) return false
 
     return user.value.permissions.some(p => p.resource === resource && (p.action === action || p.action === 'MANAGE'))

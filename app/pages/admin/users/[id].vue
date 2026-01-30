@@ -9,28 +9,29 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { hasPermission } = useAuth()
 
 const userId = computed(() => route.params.id as string)
 const isNew = computed(() => userId.value === 'new')
+
+// Check if user can change role
+const canChangeRole = computed(() => hasPermission('roles', 'UPDATE'))
 
 useSeoMeta({
   title: () => (isNew.value ? 'Thêm người dùng' : 'Sửa người dùng') + ' - TechForge Admin',
 })
 
 // Fetch user data (for edit mode)
-const { data: user } = await useFetch<UserDetail>(`/api/admin/users/${userId.value}`, {
+const { data: user } = useFetch<UserDetail>(`/api/admin/users/${userId.value}`, {
   immediate: !isNew.value,
 })
 
 // Fetch roles for select
-const { data: roles } = await useFetch('/api/admin/roles')
+const { data: roles } = useFetch('/api/admin/roles')
 
 const roleOptions = computed(() => {
-  const options = [{ id: '', displayName: '— Không có role —' }]
-  if (roles.value) {
-    options.push(...roles.value.map(r => ({ id: r.id, displayName: r.displayName })))
-  }
-  return options
+  if (!roles.value) return []
+  return roles.value.map(r => ({ value: r.id, label: r.displayName }))
 })
 
 // Form state
@@ -41,7 +42,7 @@ const state = reactive({
   firstName: '',
   lastName: '',
   avatar: '',
-  roleId: '',
+  roleId: undefined as string | undefined,
   isActive: true,
 })
 
@@ -56,7 +57,7 @@ watch(
       state.firstName = newUser.firstName || ''
       state.lastName = newUser.lastName || ''
       state.avatar = newUser.avatar || ''
-      state.roleId = newUser.role?.id || ''
+      state.roleId = newUser.role?.id || undefined
       state.isActive = newUser.isActive
     }
   },
@@ -96,7 +97,7 @@ async function onSubmit() {
       firstName: state.firstName?.trim() || null,
       lastName: state.lastName?.trim() || null,
       avatar: state.avatar?.trim() || null,
-      roleId: state.roleId || null,
+      roleId: state.roleId ?? null,
       isActive: state.isActive,
     }
 
@@ -200,13 +201,17 @@ function formatDate(date: string | null): string {
               </UFormField>
 
               <UFormField label="Role" name="roleId">
-                <USelect
+                <USelectMenu
                   v-model="state.roleId"
-                  :options="roleOptions"
+                  :disabled="!canChangeRole"
+                  :items="roleOptions"
                   class="w-full"
-                  option-label="displayName"
-                  option-value="id"
+                  placeholder="— Không có role —"
+                  value-key="value"
                 />
+                <template v-if="!canChangeRole" #hint>
+                  <span class="text-xs text-neutral-500">Bạn không có quyền thay đổi role</span>
+                </template>
               </UFormField>
 
               <UFormField class="md:col-span-2" name="isActive">

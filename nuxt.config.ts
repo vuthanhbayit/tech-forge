@@ -7,6 +7,11 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Admin routes are SPA (no SSR)
+  routeRules: {
+    '/admin/**': { ssr: false },
+  },
+
   eslint: {
     config: {
       standalone: false,
