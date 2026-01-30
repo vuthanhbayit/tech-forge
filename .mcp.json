@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "tailwindcss-server": {
+      "command": "npx",
+      "args": ["-y", "tailwindcss-mcp-server"]
+    },
+    "nuxt-ui": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://ui.nuxt.com/mcp"]
+    }
+  }
+}
