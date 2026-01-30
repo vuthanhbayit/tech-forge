@@ -94,5 +94,12 @@ export default defineEventHandler(async event => {
     },
   })
 
+  // Emit event for subscribers (cache invalidation, etc.)
+  serverEvents.emit('category:updated', {
+    id: category.id,
+    changes: updateData,
+    _meta: { userId: session.id },
+  })
+
   return category
 })
