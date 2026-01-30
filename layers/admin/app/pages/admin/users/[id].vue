@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { FormErrorEvent } from '@nuxt/ui'
 import type { UserDetail } from '#shared/types'
-import { MIN_PASSWORD_LENGTH } from '#shared/utils'
+import { MIN_PASSWORD_LENGTH } from '#shared/utils/validation'
 
 definePageMeta({
   layout: 'admin',
