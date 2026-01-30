@@ -39,6 +39,7 @@ const prefixMap = {
   chatSession: 'chat',
   chatMessage: 'msg',
   media: 'media',
+  mediaFolder: 'mf',
 } as const
 
 export type IdPrefix = keyof typeof prefixMap

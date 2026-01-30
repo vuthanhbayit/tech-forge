@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { FormErrorEvent } from '@nuxt/ui'
-import type { UserDetail } from '#shared/types'
+import type { UserDetail, MediaItem } from '#shared/types'
 import { MIN_PASSWORD_LENGTH } from '#shared/utils/validation'
 
 definePageMeta({
@@ -19,6 +19,20 @@ const isNew = computed(() => userId.value === 'new')
 
 // Check if user can change role
 const canChangeRole = computed(() => hasPermission('roles', 'UPDATE'))
+
+// Avatar picker
+const showAvatarPicker = ref(false)
+
+function onAvatarSelect(items: MediaItem[]) {
+  const selected = items[0]
+  if (selected && selected.type === 'file' && selected.url) {
+    state.avatar = selected.url
+  }
+}
+
+function removeAvatar() {
+  state.avatar = ''
+}
 
 useSeoMeta({
   title: () => (isNew.value ? 'Thêm người dùng' : 'Sửa người dùng') + ' - TechForge Admin',
@@ -187,8 +201,41 @@ function formatDate(date: string | null): string {
                 <UInput v-model="state.phone" class="w-full" placeholder="0912345678" />
               </UFormField>
 
-              <UFormField label="Avatar (URL)" name="avatar">
-                <UInput v-model="state.avatar" class="w-full" placeholder="https://example.com/avatar.jpg" />
+              <UFormField label="Avatar" name="avatar">
+                <div class="flex items-center gap-4">
+                  <!-- Preview -->
+                  <div class="relative">
+                    <img
+                      v-if="state.avatar"
+                      :src="state.avatar"
+                      alt="Avatar"
+                      class="size-16 rounded-full object-cover"
+                    />
+                    <div
+                      v-else
+                      class="flex size-16 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800"
+                    >
+                      <UIcon name="i-heroicons-user" class="size-8 text-neutral-400" />
+                    </div>
+                    <!-- Remove button -->
+                    <UButton
+                      v-if="state.avatar"
+                      icon="i-heroicons-x-mark"
+                      size="xs"
+                      color="error"
+                      variant="solid"
+                      class="absolute -top-1 -right-1 rounded-full"
+                      @click="removeAvatar"
+                    />
+                  </div>
+                  <!-- Select button -->
+                  <UButton
+                    icon="i-heroicons-photo"
+                    label="Chọn ảnh"
+                    variant="outline"
+                    @click="showAvatarPicker = true"
+                  />
+                </div>
               </UFormField>
             </div>
           </UCard>
@@ -290,5 +337,8 @@ function formatDate(date: string | null): string {
         </UForm>
       </div>
     </div>
+
+    <!-- Avatar Picker Modal -->
+    <MediaPickerModal v-model:open="showAvatarPicker" accept="image" @select="onAvatarSelect" />
   </div>
 </template>

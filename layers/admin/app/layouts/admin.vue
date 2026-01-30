@@ -55,6 +55,12 @@ const allSidebarItems: MenuItem[][] = [
   ],
   [
     {
+      label: 'Media',
+      icon: 'i-heroicons-photo',
+      to: '/admin/media',
+      permission: { resource: 'media', action: 'READ' },
+    },
+    {
       label: 'Cài đặt',
       icon: 'i-heroicons-cog-6-tooth',
       to: '/admin/settings',
