@@ -24,21 +24,20 @@ const { data: category } = await useFetch<CategoryDetail>(`/api/admin/categories
   immediate: !isNew.value,
 })
 
-// Fetch parent category options
-const { data: allCategories } = await useFetch<CategoryOption[]>('/api/admin/categories')
+// Fetch parent category options (exclude current category and its children when editing)
+const { data: allCategories } = await useFetch<CategoryOption[]>('/api/admin/categories', {
+  query: {
+    excludeId: isNew.value ? undefined : categoryId.value,
+  },
+})
 
-// Filter parent options (exclude self and children when editing)
+// Build parent options
 const parentOptions = computed(() => {
   if (!allCategories.value) return []
 
   const options = [{ id: '', name: '— Danh mục gốc —' }]
-
-  // TODO: In edit mode, exclude current category and its children
-  // For now, just add all categories
   allCategories.value.forEach(cat => {
-    if (cat.id !== categoryId.value) {
-      options.push(cat)
-    }
+    options.push(cat)
   })
 
   return options

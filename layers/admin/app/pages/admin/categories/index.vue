@@ -11,7 +11,7 @@ useSeoMeta({
   title: 'Quản lý Danh mục - TechForge Admin',
 })
 
-const { handleError, showSuccess } = useApiError()
+const { handleError, showSuccess, showWarning } = useApiError()
 
 const { data: categories, refresh, status } = await useFetch<Category[]>('/api/admin/categories')
 
@@ -26,31 +26,40 @@ const columns: TableColumn<Category>[] = [
   { accessorKey: 'actions', header: '' },
 ]
 
-// Delete category
-const deleteLoading = ref<string | null>(null)
+// Delete confirmation modal
+const {
+  isOpen: deleteModal,
+  itemToDelete: categoryToDelete,
+  isDeleting,
+  openModal,
+  confirmDelete,
+} = useDeleteConfirm<Category>()
 
-async function deleteCategory(category: Category) {
+function handleDeleteClick(category: Category) {
   if (category._count.children > 0) {
-    handleError({ data: { message: `Không thể xóa danh mục có ${category._count.children} danh mục con` } }, '')
+    showWarning(`Không thể xóa danh mục có ${category._count.children} danh mục con`)
     return
   }
-
   if (category._count.products > 0) {
-    handleError({ data: { message: `Không thể xóa danh mục có ${category._count.products} sản phẩm` } }, '')
+    showWarning(`Không thể xóa danh mục có ${category._count.products} sản phẩm`)
     return
   }
+  openModal(category)
+}
 
-  if (!confirm(`Bạn có chắc muốn xóa danh mục "${category.name}"?`)) return
-
-  deleteLoading.value = category.id
-  try {
-    await $fetch(`/api/admin/categories/${category.id}`, { method: 'DELETE' })
+async function deleteCategory() {
+  await confirmDelete(async () => {
+    await $fetch(`/api/admin/categories/${categoryToDelete.value!.id}`, { method: 'DELETE' })
     showSuccess('Đã xóa danh mục')
     refresh()
+  })
+}
+
+async function handleDelete() {
+  try {
+    await deleteCategory()
   } catch (error) {
     handleError(error, 'Không thể xóa danh mục')
-  } finally {
-    deleteLoading.value = null
   }
 }
 </script>
@@ -104,12 +113,20 @@ async function deleteCategory(category: Category) {
             <TableActions
               :edit-link="`/admin/categories/${row.original.id}`"
               :delete-disabled="row.original._count.children > 0 || row.original._count.products > 0"
-              :delete-loading="deleteLoading === row.original.id"
-              @delete="deleteCategory(row.original)"
+              @delete="handleDeleteClick(row.original)"
             />
           </template>
         </UTable>
       </UCard>
     </div>
+
+    <!-- Delete Modal -->
+    <DeleteConfirmModal
+      v-model:open="deleteModal"
+      :item-name="categoryToDelete?.name"
+      :loading="isDeleting"
+      description="Danh mục sẽ bị xóa vĩnh viễn."
+      @confirm="handleDelete"
+    />
   </div>
 </template>

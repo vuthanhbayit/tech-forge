@@ -9,8 +9,16 @@ export default defineEventHandler(async event => {
   const parentId = query.parentId as string | undefined
   const includeChildren = query.includeChildren === 'true'
   const onlyActive = query.onlyActive === 'true'
+  const excludeId = query.excludeId as string | undefined
 
   const where: Record<string, unknown> = {}
+
+  // Exclude a category and all its descendants (for parent selection)
+  if (excludeId) {
+    const excludeIds = await getDescendantIds(excludeId)
+    excludeIds.push(excludeId)
+    where.id = { notIn: excludeIds }
+  }
 
   if (parentId === 'null' || parentId === '') {
     where.parentId = null // Root categories only

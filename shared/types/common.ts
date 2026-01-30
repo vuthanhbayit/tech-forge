@@ -16,10 +16,28 @@ export interface PaginatedResponse<T> {
   pagination: PaginationInfo
 }
 
+// Error codes for API responses
+export type ErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'AUTHENTICATION_ERROR'
+  | 'PERMISSION_DENIED'
+  | 'RESOURCE_NOT_FOUND'
+  | 'RESOURCE_CONFLICT'
+  | 'RATE_LIMITED'
+  | 'INTERNAL_ERROR'
+
+// Field-level validation error
+export interface FieldError {
+  field: string
+  message: string
+}
+
 // API error response
 export interface ApiError {
   statusCode: number
   message: string
+  code?: ErrorCode
+  errors?: FieldError[]
 }
 
 // Success response with message

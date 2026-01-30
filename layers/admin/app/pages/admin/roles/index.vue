@@ -11,7 +11,7 @@ useSeoMeta({
   title: 'Quản lý Roles - TechForge Admin',
 })
 
-const { handleError, showSuccess } = useApiError()
+const { handleError, showSuccess, showWarning } = useApiError()
 
 const { data: roles, refresh, status } = await useFetch<Role[]>('/api/admin/roles')
 
@@ -24,31 +24,40 @@ const columns: TableColumn<Role>[] = [
   { accessorKey: 'actions', header: '' },
 ]
 
-// Delete role
-const deleteLoading = ref<string | null>(null)
+// Delete confirmation modal
+const {
+  isOpen: deleteModal,
+  itemToDelete: roleToDelete,
+  isDeleting,
+  openModal,
+  confirmDelete,
+} = useDeleteConfirm<Role>()
 
-async function deleteRole(role: Role) {
+function handleDeleteClick(role: Role) {
   if (role.isSystem) {
-    handleError({ data: { message: 'Không thể xóa role hệ thống' } }, '')
+    showWarning('Không thể xóa role hệ thống')
     return
   }
-
   if (role._count.users > 0) {
-    handleError({ data: { message: `Không thể xóa role có ${role._count.users} người dùng` } }, '')
+    showWarning(`Không thể xóa role có ${role._count.users} người dùng`)
     return
   }
+  openModal(role)
+}
 
-  if (!confirm(`Bạn có chắc muốn xóa role "${role.displayName}"?`)) return
-
-  deleteLoading.value = role.id
-  try {
-    await $fetch(`/api/admin/roles/${role.id}`, { method: 'DELETE' })
+async function deleteRole() {
+  await confirmDelete(async () => {
+    await $fetch(`/api/admin/roles/${roleToDelete.value!.id}`, { method: 'DELETE' })
     showSuccess('Đã xóa role')
     refresh()
+  })
+}
+
+async function handleDelete() {
+  try {
+    await deleteRole()
   } catch (error) {
     handleError(error, 'Không thể xóa role')
-  } finally {
-    deleteLoading.value = null
   }
 }
 </script>
@@ -69,12 +78,20 @@ async function deleteRole(role: Role) {
             <TableActions
               :edit-link="`/admin/roles/${row.original.id}`"
               :delete-disabled="row.original.isSystem || row.original._count.users > 0"
-              :delete-loading="deleteLoading === row.original.id"
-              @delete="deleteRole(row.original)"
+              @delete="handleDeleteClick(row.original)"
             />
           </template>
         </UTable>
       </UCard>
     </div>
+
+    <!-- Delete Modal -->
+    <DeleteConfirmModal
+      v-model:open="deleteModal"
+      :item-name="roleToDelete?.displayName"
+      :loading="isDeleting"
+      description="Role sẽ bị xóa vĩnh viễn."
+      @confirm="handleDelete"
+    />
   </div>
 </template>
