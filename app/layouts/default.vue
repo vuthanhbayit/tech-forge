@@ -35,7 +35,7 @@ const userMenuItems = computed(() => {
         </NuxtLink>
       </template>
 
-      <template #center>
+      <template #default>
         <UNavigationMenu :items="links" />
       </template>
 

@@ -5,7 +5,7 @@ interface AuthUser {
   lastName: string | null
   phone: string | null
   avatar: string | null
-  role: string | null
+  role: string | undefined
   permissions: Array<{
     resource: string
     action: string

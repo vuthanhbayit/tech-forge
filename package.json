@@ -8,7 +8,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "vue-tsc --noEmit && tsc --noEmit -p prisma/tsconfig.json",
+    "typecheck": "nuxt typecheck && tsc --noEmit -p prisma/tsconfig.json",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",

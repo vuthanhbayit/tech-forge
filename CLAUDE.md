@@ -175,6 +175,24 @@ tech-forge/
 }
 ```
 
+### Vue File Structure
+
+Thứ tự các block trong file `.vue`:
+
+```vue
+<template>
+  <!-- HTML template -->
+</template>
+
+<script setup lang="ts">
+// Logic
+</script>
+
+<style scoped>
+/* Styles */
+</style>
+```
+
 ### Naming
 
 - Database tables: snake_case (via @map)
@@ -215,10 +233,9 @@ tech-forge/
 - [x] Settings API (CRUD + public endpoint)
 - [x] Admin UI: Roles management (list, create, edit, delete, permissions)
 - [x] Admin UI: Settings management (CRUD với JSON support)
+- [x] Admin UI: Categories management (list, create, edit, delete, hierarchical structure)
 
 ### Next Steps
-
-- [ ] Categories UI (admin pages)
 - [ ] Implement Product module (API + UI)
 - [ ] Implement Users management (admin)
 - [ ] Implement Cart module

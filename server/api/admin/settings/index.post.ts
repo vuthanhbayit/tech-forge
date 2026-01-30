@@ -1,3 +1,5 @@
+import type { InputJsonValue } from '@prisma/client/runtime/client'
+
 /**
  * POST /api/admin/settings
  * Bulk upsert settings
@@ -11,7 +13,7 @@ export default defineEventHandler(async event => {
   const body = await readBody(event)
 
   // Expect body to be an array of settings or an object { key: value }
-  let settingsToUpsert: Array<{ key: string; value: unknown; group?: string; isPublic?: boolean }>
+  let settingsToUpsert: Array<{ key: string; value: InputJsonValue; group?: string; isPublic?: boolean }>
 
   if (Array.isArray(body)) {
     settingsToUpsert = body
@@ -19,7 +21,7 @@ export default defineEventHandler(async event => {
     // Convert { key: value } format to array
     settingsToUpsert = Object.entries(body).map(([key, value]) => ({
       key,
-      value,
+      value: value as InputJsonValue,
     }))
   } else {
     throw createError({ statusCode: 400, message: 'Invalid body format' })
@@ -55,8 +57,8 @@ export default defineEventHandler(async event => {
           group: setting.group || null,
           isPublic: setting.isPublic ?? false,
         },
-      })
-    )
+      }),
+    ),
   )
 
   return results

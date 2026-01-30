@@ -35,11 +35,17 @@ export default defineEventHandler(async event => {
           children: {
             orderBy: { rank: 'asc' },
           },
+          parent: {
+            select: { id: true, name: true },
+          },
           _count: {
             select: { products: true },
           },
         }
       : {
+          parent: {
+            select: { id: true, name: true },
+          },
           _count: {
             select: { products: true, children: true },
           },

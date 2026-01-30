@@ -12,4 +12,10 @@ export default defineNuxtConfig({
       standalone: false,
     },
   },
+
+  // Enable strict template type checking
+  typescript: {
+    strict: true,
+    typeCheck: true,
+  },
 })
